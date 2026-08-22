@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  Replace the placeholder below with your Mapbox PUBLIC token (starts with "pk.").
+  The Mapbox SDK reads this exact resource name automatically — nothing else to wire up.
+-->
+<resources xmlns:tools="http://schemas.android.com/tools">
+    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">REPLACE_WITH_YOUR_MAPBOX_PUBLIC_TOKEN</string>
+</resources>
