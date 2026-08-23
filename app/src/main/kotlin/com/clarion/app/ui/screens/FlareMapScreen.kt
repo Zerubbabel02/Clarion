@@ -16,12 +16,10 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.viewinterop.AndroidView
@@ -30,6 +28,7 @@ import androidx.lifecycle.LifecycleEventObserver
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import org.maplibre.android.camera.CameraPosition
 import org.maplibre.android.geometry.LatLng
+import org.maplibre.android.maps.MapLibreMapOptions
 import org.maplibre.android.maps.MapView
 
 // Bauchi, Nigeria — a placeholder center point until real device/incident GPS is wired up.
@@ -38,45 +37,51 @@ private const val STYLE_URL = "https://tiles.openfreemap.org/styles/liberty"
 
 @Composable
 fun FlareMapScreen(onBack: () -> Unit) {
+    val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
-    var mapView by remember { mutableStateOf<MapView?>(null) }
 
-    Box(modifier = Modifier.fillMaxSize()) {
-        AndroidView(
-            modifier = Modifier.fillMaxSize(),
-            factory = { context ->
-                MapView(context).also { view ->
-                    mapView = view
-                    view.onCreate(Bundle())
-                    view.getMapAsync { map ->
-                        map.setStyle(STYLE_URL)
-                        map.cameraPosition = CameraPosition.Builder()
-                            .target(PLACEHOLDER_LOCATION)
-                            .zoom(15.0)
-                            .build()
-                    }
-                }
-            },
-        )
-
-        DisposableEffect(lifecycleOwner, mapView) {
-            val view = mapView
-            val observer = LifecycleEventObserver { _, event ->
-                when (event) {
-                    Lifecycle.Event.ON_START -> view?.onStart()
-                    Lifecycle.Event.ON_RESUME -> view?.onResume()
-                    Lifecycle.Event.ON_PAUSE -> view?.onPause()
-                    Lifecycle.Event.ON_STOP -> view?.onStop()
-                    Lifecycle.Event.ON_DESTROY -> view?.onDestroy()
-                    else -> Unit
-                }
-            }
-            lifecycleOwner.lifecycle.addObserver(observer)
-            onDispose {
-                lifecycleOwner.lifecycle.removeObserver(observer)
-                view?.onDestroy()
+    // Created once via `remember`, not inside AndroidView's factory — writing to Compose
+    // state from inside factory (as an earlier version of this screen did) caused a spurious
+    // recomposition that re-registered lifecycle callbacks mid-render, which is a known
+    // trigger for native SIGSEGV crashes in MapLibre's GL render thread on some GPUs
+    // (confirmed reproducing on this Tecno device). textureMode(true) additionally switches
+    // the MapView off the default GLSurfaceView renderer, which is the other half of the fix.
+    val mapView = remember {
+        val options = MapLibreMapOptions.createFromAttributes(context).apply {
+            textureMode(true)
+        }
+        MapView(context, options).apply {
+            onCreate(Bundle())
+            getMapAsync { map ->
+                map.setStyle(STYLE_URL)
+                map.cameraPosition = CameraPosition.Builder()
+                    .target(PLACEHOLDER_LOCATION)
+                    .zoom(15.0)
+                    .build()
             }
         }
+    }
+
+    DisposableEffect(lifecycleOwner) {
+        val observer = LifecycleEventObserver { _, event ->
+            when (event) {
+                Lifecycle.Event.ON_START -> mapView.onStart()
+                Lifecycle.Event.ON_RESUME -> mapView.onResume()
+                Lifecycle.Event.ON_PAUSE -> mapView.onPause()
+                Lifecycle.Event.ON_STOP -> mapView.onStop()
+                Lifecycle.Event.ON_DESTROY -> mapView.onDestroy()
+                else -> Unit
+            }
+        }
+        lifecycleOwner.lifecycle.addObserver(observer)
+        onDispose {
+            lifecycleOwner.lifecycle.removeObserver(observer)
+            mapView.onDestroy()
+        }
+    }
+
+    Box(modifier = Modifier.fillMaxSize()) {
+        AndroidView(modifier = Modifier.fillMaxSize(), factory = { mapView })
 
         Row(
             modifier = Modifier
