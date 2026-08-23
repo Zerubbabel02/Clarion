@@ -38,6 +38,7 @@ fun HomeScreen(
     onCirclesSettings: () -> Unit = {},
     onSendTestAlert: () -> Unit = {},
     onPreviewMap: () -> Unit = {},
+    onPreviewOnboarding: () -> Unit = {},
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
@@ -135,6 +136,14 @@ fun HomeScreen(
                         modifier = Modifier.clickable { onPreviewMap() },
                     )
                 }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                    text = "Preview onboarding (demo)",
+                    fontSize = 12.5.sp,
+                    fontWeight = FontWeight.SemiBold,
+                    color = MaterialTheme.colorScheme.primary,
+                    modifier = Modifier.clickable { onPreviewOnboarding() },
+                )
             }
 
             Row(
