@@ -25,14 +25,18 @@ import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
+import com.clarion.app.core.ClarionRepository
+import kotlinx.coroutines.launch
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontWeight
@@ -44,6 +48,11 @@ private val Flare = Color(0xFFE8562E)
 @Composable
 fun NightModeScreen(onBack: () -> Unit) {
     var enabled by remember { mutableStateOf(true) }
+    val scope = rememberCoroutineScope()
+
+    LaunchedEffect(Unit) {
+        ClarionRepository.getMyProfile()?.let { enabled = it.nightMuteEnabled }
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 22.dp)) {
@@ -77,7 +86,10 @@ fun NightModeScreen(onBack: () -> Unit) {
                 }
                 Switch(
                     checked = enabled,
-                    onCheckedChange = { enabled = it },
+                    onCheckedChange = { checked ->
+                        enabled = checked
+                        scope.launch { ClarionRepository.updateNightMuteEnabled(checked) }
+                    },
                     colors = SwitchDefaults.colors(checkedTrackColor = MaterialTheme.colorScheme.primary),
                 )
             }

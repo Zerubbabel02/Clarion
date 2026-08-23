@@ -9,9 +9,12 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.mutableStateOf
 import androidx.core.content.ContextCompat
 import com.clarion.app.core.NotificationHelper
+import com.clarion.app.core.ThemeMode
+import com.clarion.app.core.ThemePrefs
 import com.clarion.app.ui.nav.ClarionNavHost
 import com.clarion.app.ui.theme.ClarionTheme
 
@@ -24,10 +27,10 @@ class MainActivity : ComponentActivity() {
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op either way */ }
 
-    // A Compose State (not a plain var) so that onNewIntent — which fires when the app is
-    // already running in the background and a Flare alert's "Open Map" brings it forward —
-    // can push a fresh navigation target into the already-composed NavHost.
+    // Compose State (not a plain var) so onNewIntent can push a fresh navigation target into
+    // the already-composed NavHost when the app is already running in the background.
     private val pendingRoute = mutableStateOf<String?>(null)
+    private val themeMode = mutableStateOf(ThemeMode.SYSTEM)
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,10 +40,25 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
 
         pendingRoute.value = intent.getStringExtra(EXTRA_NAVIGATE_TO)
+        themeMode.value = ThemePrefs.get(this)
 
         setContent {
-            ClarionTheme {
-                ClarionNavHost(startRoute = pendingRoute.value)
+            val mode = themeMode.value
+            val systemDark = isSystemInDarkTheme()
+            val isDark = when (mode) {
+                ThemeMode.SYSTEM -> systemDark
+                ThemeMode.LIGHT -> false
+                ThemeMode.DARK -> true
+            }
+            ClarionTheme(darkTheme = isDark) {
+                ClarionNavHost(
+                    startRoute = pendingRoute.value,
+                    themeMode = mode,
+                    onThemeModeChange = {
+                        themeMode.value = it
+                        ThemePrefs.set(this, it)
+                    },
+                )
             }
         }
     }

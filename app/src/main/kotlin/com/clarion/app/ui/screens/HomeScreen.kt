@@ -19,6 +19,11 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
@@ -27,6 +32,7 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.clarion.app.core.ClarionRepository
 import com.clarion.app.ui.theme.Flare
 import com.clarion.app.ui.theme.FlareGlow
 import com.clarion.app.ui.theme.Safe
@@ -35,41 +41,28 @@ import com.clarion.app.ui.theme.Safe
 fun HomeScreen(
     onSendFlare: () -> Unit = {},
     onShareLocation: () -> Unit = {},
-    onCirclesSettings: () -> Unit = {},
-    onSendTestAlert: () -> Unit = {},
-    onPreviewMap: () -> Unit = {},
-    onPreviewOnboarding: () -> Unit = {},
 ) {
+    var displayName by remember { mutableStateOf<String?>(null) }
+
+    LaunchedEffect(Unit) {
+        displayName = ClarionRepository.getMyProfile()?.displayName
+    }
+
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
             Spacer(modifier = Modifier.height(56.dp))
 
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Clarion",
-                    fontWeight = FontWeight.Medium,
-                    fontSize = 19.sp,
-                    color = MaterialTheme.colorScheme.primary,
-                )
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .background(MaterialTheme.colorScheme.surface, CircleShape)
-                        .clickable { onCirclesSettings() },
-                    contentAlignment = Alignment.Center,
-                ) {
-                    Text("⚙", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
-                }
-            }
+            Text(
+                text = "Clarion",
+                fontWeight = FontWeight.Medium,
+                fontSize = 19.sp,
+                color = MaterialTheme.colorScheme.primary,
+            )
 
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = "Good evening",
+                text = if (displayName != null) "Good evening, $displayName" else "Good evening",
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -116,34 +109,6 @@ fun HomeScreen(
                     textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
                 )
-
-                Spacer(modifier = Modifier.height(18.dp))
-
-                Row {
-                    Text(
-                        text = "Send test alert (demo)",
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { onSendTestAlert() },
-                    )
-                    Spacer(modifier = Modifier.width(18.dp))
-                    Text(
-                        text = "Preview map (demo)",
-                        fontSize = 12.5.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = MaterialTheme.colorScheme.primary,
-                        modifier = Modifier.clickable { onPreviewMap() },
-                    )
-                }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Preview onboarding (demo)",
-                    fontSize = 12.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { onPreviewOnboarding() },
-                )
             }
 
             Row(
@@ -155,12 +120,6 @@ fun HomeScreen(
                     subtitle = "With loved ones, any time",
                     modifier = Modifier.weight(1f),
                     onClick = onShareLocation,
-                )
-                QuickAccessCard(
-                    title = "Circles & Settings",
-                    subtitle = "1.2km radius · 14 nearby",
-                    modifier = Modifier.weight(1f),
-                    onClick = onCirclesSettings,
                 )
             }
         }

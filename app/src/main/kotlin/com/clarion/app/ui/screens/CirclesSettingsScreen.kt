@@ -23,10 +23,12 @@ import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -34,19 +36,41 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-
-private data class Contact(val initials: String, val name: String, val sub: String, val color: Color)
-
-private val trustedCircleContacts = listOf(
-    Contact("TB", "Tunde Balogun", "Block C · Lodge member", Color(0xFF4C6FBF)),
-    Contact("NF", "Ngozi Fadipe", "Block C · Lodge member", Color(0xFF3B93A6)),
-    Contact("KE", "Kunle Eze", "Neighboring shop owner", Color(0xFFC08A2E)),
-)
+import com.clarion.app.core.ClarionRepository
+import com.clarion.app.core.Profile
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 
 @Composable
-fun CirclesSettingsScreen(onBack: () -> Unit, onOpenNightMode: () -> Unit) {
+fun CirclesSettingsScreen(onOpenNightMode: () -> Unit) {
+    val scope = rememberCoroutineScope()
+
     var radiusKm by remember { mutableFloatStateOf(1.2f) }
     var isRadiusMode by remember { mutableStateOf(true) }
+    var trustedMembers by remember { mutableStateOf<List<Profile>>(emptyList()) }
+    var excludedMembers by remember { mutableStateOf<List<Profile>>(emptyList()) }
+    var loaded by remember { mutableStateOf(false) }
+    var dialog by remember { mutableStateOf<AddTarget?>(null) }
+
+    suspend fun refresh() {
+        val profile = ClarionRepository.getMyProfile()
+        if (profile != null) {
+            radiusKm = profile.radiusKm.toFloat()
+            isRadiusMode = profile.broadcastMode != "circle"
+        }
+        trustedMembers = ClarionRepository.listTrustedMembers()
+        excludedMembers = ClarionRepository.listExcluded()
+        loaded = true
+    }
+
+    LaunchedEffect(Unit) { refresh() }
+
+    // Debounced save — write to Supabase 500ms after the user stops dragging, not on every pixel.
+    LaunchedEffect(radiusKm, loaded) {
+        if (!loaded) return@LaunchedEffect
+        delay(500)
+        ClarionRepository.updateRadiusKm(radiusKm.toDouble())
+    }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(
@@ -56,10 +80,9 @@ fun CirclesSettingsScreen(onBack: () -> Unit, onOpenNightMode: () -> Unit) {
                 .padding(horizontal = 22.dp),
         ) {
             Spacer(modifier = Modifier.height(58.dp))
-            ScreenHeader(title = "Circles & Settings", onBack = onBack)
+            Text("Circles & Settings", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(18.dp))
 
-            // Segmented control: broadcast by radius vs. a hand-picked trusted circle.
             Row(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -70,13 +93,19 @@ fun CirclesSettingsScreen(onBack: () -> Unit, onOpenNightMode: () -> Unit) {
                     label = "By Radius",
                     selected = isRadiusMode,
                     modifier = Modifier.weight(1f),
-                    onClick = { isRadiusMode = true },
+                    onClick = {
+                        isRadiusMode = true
+                        scope.launch { ClarionRepository.updateBroadcastMode("radius") }
+                    },
                 )
                 SegmentTab(
                     label = "Trusted Circle",
                     selected = !isRadiusMode,
                     modifier = Modifier.weight(1f),
-                    onClick = { isRadiusMode = false },
+                    onClick = {
+                        isRadiusMode = false
+                        scope.launch { ClarionRepository.updateBroadcastMode("circle") }
+                    },
                 )
             }
 
@@ -109,12 +138,6 @@ fun CirclesSettingsScreen(onBack: () -> Unit, onOpenNightMode: () -> Unit) {
                         Text("300m", fontSize = 11.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f))
                         Text("5km", fontSize = 11.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f))
                     }
-                    Spacer(modifier = Modifier.height(8.dp))
-                    Text(
-                        "This will be fine-tuned once we've walked the real distances in your area.",
-                        fontSize = 12.5.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
-                    )
                 }
             } else {
                 Column(
@@ -123,8 +146,8 @@ fun CirclesSettingsScreen(onBack: () -> Unit, onOpenNightMode: () -> Unit) {
                         .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
                         .padding(6.dp),
                 ) {
-                    trustedCircleContacts.forEach { contact -> ContactRow(contact) }
-                    AddRow(label = "Add someone to your circle", onClick = {})
+                    trustedMembers.forEach { p -> ContactRow(p) }
+                    AddRow(label = "Add someone to your circle", onClick = { dialog = AddTarget.TRUSTED })
                 }
             }
 
@@ -143,34 +166,51 @@ fun CirclesSettingsScreen(onBack: () -> Unit, onOpenNightMode: () -> Unit) {
                     .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
                     .padding(6.dp),
             ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth().padding(vertical = 11.dp, horizontal = 10.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                ) {
-                    Box(modifier = Modifier.size(34.dp).background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.25f), CircleShape))
-                    Spacer(modifier = Modifier.width(12.dp))
-                    Column(modifier = Modifier.weight(1f)) {
-                        Text("Front Desk Line", fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-                        Text("Never receives your Flare", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-                    }
-                    Text("✕", fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
-                }
-                AddRow(label = "Add someone to exclude", onClick = {})
+                excludedMembers.forEach { p -> ContactRow(p, subtitleOverride = "Never receives your Flare") }
+                AddRow(label = "Add someone to exclude", onClick = { dialog = AddTarget.EXCLUDED })
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            SettingsRow(
-                title = "Night circle muting",
-                subtitle = "Same-building alerts stay quiet after 9pm",
-                trailing = "ON",
-                onClick = onOpenNightMode,
-            )
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
+                    .clickable { onOpenNightMode() }
+                    .padding(16.dp),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+            ) {
+                Column(modifier = Modifier.weight(1f)) {
+                    Text("Night circle muting", fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+                    Text("Same-building alerts stay quiet after 9pm", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+                }
+                Text("→", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
+            }
 
-            Spacer(modifier = Modifier.height(26.dp))
+            Spacer(modifier = Modifier.height(90.dp))
         }
     }
+
+    dialog?.let { target ->
+        AddByEmailDialog(
+            title = if (target == AddTarget.TRUSTED) "Add to trusted circle" else "Add to exclude list",
+            onDismiss = { dialog = null },
+            onConfirm = { email ->
+                scope.launch {
+                    val found = ClarionRepository.findProfileByEmail(email)
+                    if (found != null) {
+                        if (target == AddTarget.TRUSTED) ClarionRepository.addTrustedMember(found.id) else ClarionRepository.addExcluded(found.id)
+                        refresh()
+                    }
+                    dialog = null
+                }
+            },
+        )
+    }
 }
+
+private enum class AddTarget { TRUSTED, EXCLUDED }
 
 @Composable
 private fun SegmentTab(label: String, selected: Boolean, modifier: Modifier = Modifier, onClick: () -> Unit) {
@@ -194,18 +234,18 @@ private fun SegmentTab(label: String, selected: Boolean, modifier: Modifier = Mo
 }
 
 @Composable
-private fun ContactRow(contact: Contact) {
+private fun ContactRow(profile: Profile, subtitleOverride: String? = null) {
     Row(
         modifier = Modifier.fillMaxWidth().padding(vertical = 11.dp, horizontal = 10.dp),
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Box(modifier = Modifier.size(40.dp).background(contact.color, CircleShape), contentAlignment = Alignment.Center) {
-            Text(contact.initials, color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
+        Box(modifier = Modifier.size(40.dp).background(MaterialTheme.colorScheme.primary, CircleShape), contentAlignment = Alignment.Center) {
+            Text((profile.displayName.firstOrNull() ?: '?').uppercase(), color = Color.White, fontSize = 13.sp, fontWeight = FontWeight.Bold)
         }
         Spacer(modifier = Modifier.width(12.dp))
         Column {
-            Text(contact.name, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-            Text(contact.sub, fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Text(profile.displayName, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+            Text(subtitleOverride ?: (profile.phoneNumber ?: ""), fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
         }
     }
 }
@@ -220,56 +260,12 @@ private fun AddRow(label: String, onClick: () -> Unit) {
         verticalAlignment = Alignment.CenterVertically,
     ) {
         Box(
-            modifier = Modifier
-                .size(34.dp)
-                .background(Color.Transparent, CircleShape),
+            modifier = Modifier.size(34.dp).background(Color.Transparent, CircleShape),
             contentAlignment = Alignment.Center,
         ) {
             Text("+", fontSize = 18.sp, color = MaterialTheme.colorScheme.primary)
         }
         Spacer(modifier = Modifier.width(10.dp))
         Text(label, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.primary)
-    }
-}
-
-@Composable
-fun ScreenHeader(title: String, onBack: () -> Unit) {
-    Row(verticalAlignment = Alignment.CenterVertically) {
-        Box(
-            modifier = Modifier
-                .size(38.dp)
-                .background(MaterialTheme.colorScheme.surface, CircleShape)
-                .clickable { onBack() },
-            contentAlignment = Alignment.Center,
-        ) {
-            Text("←", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground)
-        }
-        Spacer(modifier = Modifier.width(14.dp))
-        Text(title, fontSize = 17.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-    }
-}
-
-@Composable
-fun SettingsRow(title: String, subtitle: String, trailing: String, onClick: () -> Unit) {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth()
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
-            .clickable { onClick() }
-            .padding(16.dp),
-        horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-    ) {
-        Column(modifier = Modifier.weight(1f)) {
-            Text(title, fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-            Text(subtitle, fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-        }
-        Box(
-            modifier = Modifier
-                .background(MaterialTheme.colorScheme.primary, RoundedCornerShape(20.dp))
-                .padding(horizontal = 10.dp, vertical = 4.dp),
-        ) {
-            Text(trailing, color = Color.White, fontSize = 11.sp, fontWeight = FontWeight.Bold)
-        }
     }
 }
