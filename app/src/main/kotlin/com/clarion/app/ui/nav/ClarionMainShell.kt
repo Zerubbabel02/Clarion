@@ -76,6 +76,9 @@ fun ClarionMainShell(
                                     senderName = sender.displayName,
                                     distance = distanceLabel,
                                     location = flare.locationLabel ?: "Nearby",
+                                    flareLat = flare.lat,
+                                    flareLng = flare.lng,
+                                    senderAvatarUrl = sender.avatarUrl,
                                 )
                             }
                         }
@@ -114,7 +117,7 @@ fun ClarionMainShell(
         Box(modifier = Modifier.padding(bottom = padding.calculateBottomPadding())) {
             when (selected) {
                 0 -> HomeScreen(onSendFlare = onSendFlare, onShareLocation = onShareLocation)
-                1 -> FlareMapScreen(onBack = { selected = 0 })
+                1 -> FlareMapScreen(targetLat = null, targetLng = null, targetSenderName = null, onBack = { selected = 0 })
                 2 -> CirclesSettingsScreen(onOpenNightMode = onOpenNightMode)
                 3 -> ProfileScreen(themeMode = themeMode, onThemeModeChange = onThemeModeChange, onSignedOut = onSignedOut)
             }

@@ -6,9 +6,11 @@ import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
-import com.clarion.app.ui.nav.ClarionDestinations
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.core.app.NotificationManagerCompat
+import com.clarion.app.core.NotificationHelper
+import com.clarion.app.ui.nav.ClarionDestinations
 import com.clarion.app.ui.screens.IncomingFlareScreen
 import com.clarion.app.ui.theme.ClarionTheme
 
@@ -22,6 +24,9 @@ class FlareAlertActivity : ComponentActivity() {
         const val EXTRA_SENDER = "extra_sender"
         const val EXTRA_DISTANCE = "extra_distance"
         const val EXTRA_LOCATION = "extra_location"
+        const val EXTRA_LAT = "extra_lat"
+        const val EXTRA_LNG = "extra_lng"
+        const val EXTRA_AVATAR_URL = "extra_avatar_url"
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -45,6 +50,9 @@ class FlareAlertActivity : ComponentActivity() {
         val sender = intent.getStringExtra(EXTRA_SENDER) ?: "A neighbor"
         val distance = intent.getStringExtra(EXTRA_DISTANCE) ?: ""
         val location = intent.getStringExtra(EXTRA_LOCATION) ?: ""
+        val lat = intent.getDoubleExtra(EXTRA_LAT, Double.NaN)
+        val lng = intent.getDoubleExtra(EXTRA_LNG, Double.NaN)
+        val avatarUrl = intent.getStringExtra(EXTRA_AVATAR_URL)
 
         setContent {
             ClarionTheme {
@@ -52,15 +60,28 @@ class FlareAlertActivity : ComponentActivity() {
                     senderName = sender,
                     distance = distance,
                     location = location,
+                    avatarUrl = avatarUrl,
                     onOpenMap = {
+                        // Stop the insistent ring now that the user has actually responded —
+                        // it should keep going while they're asleep/haven't noticed, not the
+                        // instant the screen draws.
+                        NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
                         val openMapIntent = Intent(this, MainActivity::class.java).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                             putExtra(MainActivity.EXTRA_NAVIGATE_TO, ClarionDestinations.FLARE_MAP)
+                            if (!lat.isNaN() && !lng.isNaN()) {
+                                putExtra(MainActivity.EXTRA_FLARE_LAT, lat)
+                                putExtra(MainActivity.EXTRA_FLARE_LNG, lng)
+                            }
+                            putExtra(MainActivity.EXTRA_FLARE_SENDER, sender)
                         }
                         startActivity(openMapIntent)
                         finish()
                     },
-                    onDismiss = { finish() },
+                    onDismiss = {
+                        NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
+                        finish()
+                    },
                 )
             }
         }

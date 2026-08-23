@@ -16,12 +16,16 @@ import com.clarion.app.core.NotificationHelper
 import com.clarion.app.core.ThemeMode
 import com.clarion.app.core.ThemePrefs
 import com.clarion.app.ui.nav.ClarionNavHost
+import com.clarion.app.ui.nav.PendingNav
 import com.clarion.app.ui.theme.ClarionTheme
 
 class MainActivity : ComponentActivity() {
 
     companion object {
         const val EXTRA_NAVIGATE_TO = "extra_navigate_to"
+        const val EXTRA_FLARE_LAT = "extra_flare_lat"
+        const val EXTRA_FLARE_LNG = "extra_flare_lng"
+        const val EXTRA_FLARE_SENDER = "extra_flare_sender"
     }
 
     private val requestNotificationPermission =
@@ -29,7 +33,7 @@ class MainActivity : ComponentActivity() {
 
     // Compose State (not a plain var) so onNewIntent can push a fresh navigation target into
     // the already-composed NavHost when the app is already running in the background.
-    private val pendingRoute = mutableStateOf<String?>(null)
+    private val pendingNav = mutableStateOf<PendingNav?>(null)
     private val themeMode = mutableStateOf(ThemeMode.SYSTEM)
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,7 +43,7 @@ class MainActivity : ComponentActivity() {
         NotificationHelper.ensureChannel(this)
         requestNotificationPermissionIfNeeded()
 
-        pendingRoute.value = intent.getStringExtra(EXTRA_NAVIGATE_TO)
+        pendingNav.value = pendingNavFrom(intent)
         themeMode.value = ThemePrefs.get(this)
 
         setContent {
@@ -52,7 +56,7 @@ class MainActivity : ComponentActivity() {
             }
             ClarionTheme(darkTheme = isDark) {
                 ClarionNavHost(
-                    startRoute = pendingRoute.value,
+                    pendingNav = pendingNav.value,
                     themeMode = mode,
                     onThemeModeChange = {
                         themeMode.value = it
@@ -66,7 +70,19 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         setIntent(intent)
-        pendingRoute.value = intent.getStringExtra(EXTRA_NAVIGATE_TO)
+        pendingNav.value = pendingNavFrom(intent)
+    }
+
+    private fun pendingNavFrom(intent: Intent): PendingNav? {
+        val route = intent.getStringExtra(EXTRA_NAVIGATE_TO) ?: return null
+        val lat = intent.getDoubleExtra(EXTRA_FLARE_LAT, Double.NaN)
+        val lng = intent.getDoubleExtra(EXTRA_FLARE_LNG, Double.NaN)
+        return PendingNav(
+            route = route,
+            flareLat = if (lat.isNaN()) null else lat,
+            flareLng = if (lng.isNaN()) null else lng,
+            flareSender = intent.getStringExtra(EXTRA_FLARE_SENDER),
+        )
     }
 
     private fun requestNotificationPermissionIfNeeded() {

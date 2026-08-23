@@ -67,6 +67,12 @@ dependencies {
     implementation("io.github.jan-tennert.supabase:auth-kt")
     implementation("io.github.jan-tennert.supabase:realtime-kt")
     implementation("io.github.jan-tennert.supabase:storage-kt")
-    implementation("io.ktor:ktor-client-android:3.5.0")
+    // NOT ktor-client-android: that engine wraps Android's old bundled com.android.okhttp
+    // fork, which has a real, reproducible "Unbalanced enter/exit" crash when a network
+    // call's coroutine is cancelled mid-response (e.g. leaving a screen while a Supabase
+    // request is in flight, or the receiving-poll loop getting cancelled). ktor-client-okhttp
+    // uses the real, actively-maintained OkHttp library and is Ktor's recommended engine for
+    // Android for exactly this reason. Hit this crash live on-device before switching.
+    implementation("io.ktor:ktor-client-okhttp:3.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
 }

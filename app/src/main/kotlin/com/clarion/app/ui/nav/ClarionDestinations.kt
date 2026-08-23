@@ -1,5 +1,12 @@
 package com.clarion.app.ui.nav
 
+data class PendingNav(
+    val route: String,
+    val flareLat: Double? = null,
+    val flareLng: Double? = null,
+    val flareSender: String? = null,
+)
+
 object ClarionDestinations {
     const val SPLASH = "splash"
     const val AUTH = "auth"
