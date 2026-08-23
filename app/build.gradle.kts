@@ -14,6 +14,12 @@ android {
         targetSdk = 36
         versionCode = 1
         versionName = "0.1.0"
+
+        // Real phones only — drop the x86/x86_64 emulator-only ABIs MapLibre's native
+        // library otherwise bundles for all four architectures, which quadruples APK size.
+        ndk {
+            abiFilters += listOf("arm64-v8a", "armeabi-v7a")
+        }
     }
 
     buildTypes {
