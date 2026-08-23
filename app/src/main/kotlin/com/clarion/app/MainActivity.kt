@@ -15,6 +15,10 @@ import com.clarion.app.ui.theme.ClarionTheme
 
 class MainActivity : ComponentActivity() {
 
+    companion object {
+        const val EXTRA_NAVIGATE_TO = "extra_navigate_to"
+    }
+
     private val requestNotificationPermission =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { /* no-op either way */ }
 
@@ -25,9 +29,11 @@ class MainActivity : ComponentActivity() {
         NotificationHelper.ensureChannel(this)
         requestNotificationPermissionIfNeeded()
 
+        val startRoute = intent.getStringExtra(EXTRA_NAVIGATE_TO)
+
         setContent {
             ClarionTheme {
-                ClarionNavHost()
+                ClarionNavHost(startRoute = startRoute)
             }
         }
     }

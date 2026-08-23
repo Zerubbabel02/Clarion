@@ -37,6 +37,7 @@ fun HomeScreen(
     onShareLocation: () -> Unit = {},
     onCirclesSettings: () -> Unit = {},
     onSendTestAlert: () -> Unit = {},
+    onPreviewMap: () -> Unit = {},
 ) {
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 24.dp)) {
@@ -117,13 +118,23 @@ fun HomeScreen(
 
                 Spacer(modifier = Modifier.height(18.dp))
 
-                Text(
-                    text = "Send test alert (demo)",
-                    fontSize = 12.5.sp,
-                    fontWeight = FontWeight.SemiBold,
-                    color = MaterialTheme.colorScheme.primary,
-                    modifier = Modifier.clickable { onSendTestAlert() },
-                )
+                Row {
+                    Text(
+                        text = "Send test alert (demo)",
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { onSendTestAlert() },
+                    )
+                    Spacer(modifier = Modifier.width(18.dp))
+                    Text(
+                        text = "Preview map (demo)",
+                        fontSize = 12.5.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = MaterialTheme.colorScheme.primary,
+                        modifier = Modifier.clickable { onPreviewMap() },
+                    )
+                }
             }
 
             Row(

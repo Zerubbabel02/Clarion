@@ -7,4 +7,5 @@ object ClarionDestinations {
     const val CIRCLES_SETTINGS = "circles_settings"
     const val NIGHT_MODE = "night_mode"
     const val SHARE_LOCATION = "share_location"
+    const val FLARE_MAP = "flare_map"
 }

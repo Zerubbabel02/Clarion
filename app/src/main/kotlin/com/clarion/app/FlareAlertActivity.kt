@@ -2,9 +2,11 @@ package com.clarion.app
 
 import android.app.KeyguardManager
 import android.content.Context
+import android.content.Intent
 import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
+import com.clarion.app.ui.nav.ClarionDestinations
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.clarion.app.ui.screens.IncomingFlareScreen
@@ -50,7 +52,14 @@ class FlareAlertActivity : ComponentActivity() {
                     senderName = sender,
                     distance = distance,
                     location = location,
-                    onOpenMap = { finish() },
+                    onOpenMap = {
+                        val openMapIntent = Intent(this, MainActivity::class.java).apply {
+                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
+                            putExtra(MainActivity.EXTRA_NAVIGATE_TO, ClarionDestinations.FLARE_MAP)
+                        }
+                        startActivity(openMapIntent)
+                        finish()
+                    },
                     onDismiss = { finish() },
                 )
             }
