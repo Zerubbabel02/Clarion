@@ -1,0 +1,1161 @@
+<title>Clarion Night Map</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&family=Manrope:wght@500;600;700;800&family=DM+Mono:wght@400;500&family=Sora:wght@300;400;600;700&display=swap">
+<style>
+/* Layout: one phone on the left that you operate, notes and trigger buttons on the right; four tabs swap the mockup. */
+:root{--pg:#ECEAE3;--pg-ink:#1B1A18;--pg-muted:#5A574F;--pg-line:#D3CFC4;--pg-card:#F7F6F2;--pg-hot:#C93F16;--pg-onhot:#FFFFFF;--pg-shadow:rgba(20,18,12,.22)}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--pg:#15161B;--pg-ink:#ECEBE6;--pg-muted:#A9A79F;--pg-line:#33353D;--pg-card:#1E2027;--pg-hot:#E8562E;--pg-onhot:#1A0E08;--pg-shadow:rgba(0,0,0,.5);color-scheme:dark}}
+:root[data-theme="dark"]{--pg:#15161B;--pg-ink:#ECEBE6;--pg-muted:#A9A79F;--pg-line:#33353D;--pg-card:#1E2027;--pg-hot:#E8562E;--pg-onhot:#1A0E08;--pg-shadow:rgba(0,0,0,.5);color-scheme:dark}
+html,body{height:auto}
+body{margin:0;background:var(--pg);color:var(--pg-ink);font:400 15px/1.5 'Inter',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+.wrap{max-width:1120px;margin:0 auto;padding-block:14px 40px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+.hd{display:flex;align-items:center;gap:10px 22px;flex-wrap:wrap;margin-bottom:14px}
+.ttl{display:flex;flex-direction:column;gap:2px;min-width:0}
+.ttl h1{font:700 19px/1.2 'Inter',system-ui,sans-serif;letter-spacing:-.015em;margin:0}
+.ttl p{margin:0;color:var(--pg-muted);font-size:13px;line-height:1.35}
+.tabs{display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;max-width:100%}
+.tabs::-webkit-scrollbar{display:none}
+.tab{flex:none;appearance:none;-webkit-appearance:none;margin:0;border:1.5px solid var(--pg-line);background:var(--pg-card);color:var(--pg-ink);min-height:44px;padding:0 15px;border-radius:999px;font:600 14px/1 'Inter',system-ui,sans-serif;cursor:pointer;display:flex;align-items:center;gap:8px;-webkit-tap-highlight-color:transparent}
+.tab .k{font-weight:700;color:var(--pg-muted)}
+.tab[aria-selected="true"]{background:var(--pg-ink);border-color:var(--pg-ink);color:var(--pg)}
+.tab[aria-selected="true"] .k{color:var(--pg-line)}
+.tab:focus-visible,.act:focus-visible{outline:2px solid var(--pg-ink);outline-offset:2px}
+.stage{display:grid;grid-template-columns:auto minmax(0,1fr);gap:36px;align-items:start}
+.side{display:flex;flex-direction:column;gap:20px;min-width:0;max-width:540px;padding-top:6px}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+.act{appearance:none;-webkit-appearance:none;margin:0;min-height:44px;padding:0 15px;border-radius:999px;cursor:pointer;display:flex;align-items:center;gap:8px;font:600 14px/1 'Inter',system-ui,sans-serif;-webkit-tap-highlight-color:transparent}
+.act.hot{background:var(--pg-hot);color:var(--pg-onhot);border:0}
+.act.plain{background:transparent;color:var(--pg-ink);border:1.5px solid var(--pg-line)}
+.act svg{display:block;flex:none}
+.act .short{display:none}
+.phone-box{position:relative;flex:none}
+.phone{position:absolute;left:0;top:0;transform-origin:0 0;background:#0C0C0D;border-radius:58px;padding:12px;box-shadow:0 30px 60px var(--pg-shadow),inset 0 0 0 2px #2C2C2F}
+.screen{width:390px;height:844px;border-radius:46px;overflow:hidden;position:relative;isolation:isolate;background:#0B0F1A}
+.mount{position:absolute;inset:0}
+.about .tag{font:600 12px/1 'Inter',system-ui,sans-serif;letter-spacing:.1em;text-transform:uppercase;color:var(--pg-muted)}
+.about h2{font:700 28px/1.1 'Space Grotesk','Inter',system-ui,sans-serif;letter-spacing:-.02em;margin:8px 0 10px;text-wrap:balance}
+.about p{margin:0 0 12px;font-size:15px;line-height:1.55;max-width:60ch}
+.about h3{font:700 12.5px/1 'Inter',system-ui,sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--pg-muted);margin:20px 0 10px}
+.about ol,.about ul{margin:0;padding-left:20px;display:flex;flex-direction:column;gap:7px;font-size:14.5px;line-height:1.5;max-width:60ch}
+.about .note{margin-top:20px;font-size:13px;color:var(--pg-muted)}
+@media (max-width:880px){
+  .stage{grid-template-columns:minmax(0,1fr);gap:12px}
+  .side{display:contents}
+  .actions{order:1;justify-content:center}
+  .phone-box{order:2;justify-self:center}
+  .about{order:3;max-width:600px;margin:8px auto 0}
+  .ttl p{display:none}
+}
+@media (max-width:520px){
+  .ttl{display:none}
+  .act{padding:0 12px;font-size:13px}
+  .act .long{display:none}.act .short{display:inline}
+  .phone{padding:7px;border-radius:40px}.screen{border-radius:34px}
+}
+
+/* ---------- the app inside the phone ---------- */
+.app{position:absolute;inset:0;overflow:hidden;background:var(--bg);color:var(--ink);font:500 14.5px/1.45 var(--fb);-webkit-font-smoothing:antialiased;--safeDot:#3FAE83;--tk:#FFFFFF}
+.app *,.app *::before,.app *::after{box-sizing:border-box}
+:where(.app) button{appearance:none;-webkit-appearance:none;border:0;margin:0;padding:0;background:none;color:inherit;font:inherit;text-align:inherit;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.app button:focus-visible,.app input:focus-visible{outline:2px solid var(--primary);outline-offset:2px}
+.app button:active{opacity:.86}
+.app p,.app h1,.app h2,.app h3{margin:0}
+.ic{display:inline-flex;flex:none}.ic svg{display:block}
+
+.sk1{--bg:#0B0F1A;--surface:#141A2A;--surface2:#1D2540;--ink:#EEF2FA;--muted:#A3AEC6;--line:#2A3350;--primary:#9DB2FF;--onPrimary:#0B0F1A;--primarySoft:#1D2540;--flare:#FF7A45;--onFlare:#1A0E08;--flareText:#FF9A70;--safe:#4CC38A;--safeSoft:#12301F;--scrim:rgba(4,6,12,.62);--mland:#0F1524;--mblock:#172038;--mroad:#232D49;--mwater:#0E2A47;--mpark:#12281F;--youHalo:rgba(157,178,255,.22);--fd:'Manrope',system-ui,sans-serif;--fb:'Manrope',system-ui,sans-serif;--fm:'DM Mono',ui-monospace,monospace;--fdw:800;--bigw:500;--r:22px;--ri:16px}
+.sk1.alt{--bg:#F2F4F8;--surface:#FFFFFF;--surface2:#E6EAF2;--ink:#131A2B;--muted:#56607A;--line:#D5DBE8;--primary:#3D4FB8;--onPrimary:#FFFFFF;--primarySoft:#E6EAF2;--flare:#FF7A45;--onFlare:#1A0E08;--flareText:#B5400F;--safe:#1F7A57;--safeSoft:#E3F3EC;--scrim:rgba(19,26,43,.42);--mland:#E9EDF3;--mblock:#DAE0EB;--mroad:#FFFFFF;--mwater:#BBD6EE;--mpark:#CFE3D2;--youHalo:rgba(61,79,184,.16)}
+
+.view{position:absolute;inset:0;display:flex;flex-direction:column}
+.pad{padding:28px 24px 26px}
+.stack{display:flex;flex-direction:column;gap:10px}
+.px{padding:0 20px}
+.brand{display:flex;align-items:center;gap:8px;font:var(--fdw) 21px/1 var(--fd);letter-spacing:-.02em;color:var(--ink)}
+.brand .ic{color:var(--primary)}
+.h1{font:var(--fdw) 28px/1.14 var(--fd);letter-spacing:-.025em;text-wrap:balance}
+.h2{font:var(--fdw) 20px/1.2 var(--fd);letter-spacing:-.015em}
+.sub{color:var(--muted);font-size:14.5px;line-height:1.5}
+.sub.sm{font-size:13px}
+.demo{font-size:12.5px;line-height:1.4;color:var(--muted);padding:10px 12px;border-radius:12px;border:1px dashed var(--line)}
+.eyebrow{font:500 12px/1 var(--fm);letter-spacing:.18em;text-transform:uppercase;color:var(--flareText)}
+.field{display:flex;flex-direction:column;gap:7px}
+.field label{font:600 13px/1 var(--fb);color:var(--muted)}
+.field input{height:54px;border-radius:var(--ri);border:1.5px solid var(--line);background:var(--surface);color:var(--ink);padding:0 16px;font:500 16px var(--fb);width:100%}
+.field input::placeholder{color:var(--muted);opacity:.75}
+.err{color:var(--flareText);font-weight:600;font-size:13.5px}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:56px;padding:0 22px;border-radius:999px;background:var(--primary);color:var(--onPrimary);font:700 16px/1 var(--fd)}
+.btn.fl{background:var(--flare);color:var(--onFlare)}
+.btn.sf{background:#3FAE83;color:#06231A;min-height:62px;font-size:17px}
+.btn.gh{background:transparent;color:var(--ink);border:1.5px solid var(--line);min-height:48px;font-size:14.5px}
+.link{min-height:44px;display:flex;align-items:center;justify-content:center;width:100%;font:600 14px var(--fb);color:var(--muted)}
+.steps{display:flex;gap:6px}.steps i{height:4px;flex:1;border-radius:4px;background:var(--line)}.steps i.on{background:var(--primary)}
+.perm{display:flex;gap:12px;align-items:flex-start;padding:14px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
+.pi{width:40px;height:40px;flex:none;border-radius:12px;background:var(--primarySoft);color:var(--primary);display:flex;align-items:center;justify-content:center}
+.perm .tx{flex:1;min-width:0}.perm b{display:block;font:700 15.5px/1.3 var(--fb)}.perm .tx span{font-size:13px;color:var(--muted);line-height:1.4;display:block}
+.mini{min-height:38px;padding:0 13px;border-radius:999px;border:1.5px solid var(--line);font:700 12.5px/1 var(--fb);flex:none;display:flex;align-items:center;gap:6px;white-space:nowrap}
+.mini.pr{background:var(--primary);color:var(--onPrimary);border-color:transparent}
+.mini.ok{background:var(--safeSoft);color:var(--safe);border-color:transparent}
+
+.av{width:46px;height:46px;flex:none;border-radius:50%;background:var(--primarySoft);color:var(--primary);display:flex;align-items:center;justify-content:center;font:700 16px/1 var(--fd)}
+.av.sm{width:36px;height:36px;font-size:13.5px}.av.xs{width:22px;height:22px;font-size:11px}
+.av.live{box-shadow:0 0 0 2px var(--surface),0 0 0 4px var(--safeDot)}
+.top{display:flex;align-items:center;gap:10px}
+.top.pd{padding:18px 20px 0}
+.top .sp{flex:1}
+.top .lg{color:var(--primary);display:flex}
+.greet{padding:16px 24px 12px;display:flex;flex-direction:column;gap:7px}
+.g{font:var(--fdw) 26px/1.14 var(--fd);letter-spacing:-.02em;text-wrap:balance}
+.quiet{display:flex;align-items:center;gap:8px;color:var(--muted);font-size:13.5px;line-height:1.3}
+.quiet i{width:8px;height:8px;border-radius:50%;background:var(--safeDot);flex:none}
+.sharein{display:flex;align-items:center;gap:11px;padding:9px 9px 9px 12px;border-radius:var(--r);background:var(--surface);border:1px solid var(--line)}
+.sharein.glass{background:color-mix(in srgb,var(--surface) 62%,transparent)}
+.sharein .tx{flex:1;min-width:0;line-height:1.25}
+.sharein b{display:block;font:700 13.5px/1.25 var(--fb)}
+.sharein .tx span{color:var(--safe);font-weight:700;font-size:11.5px;letter-spacing:.02em}
+.see{min-height:40px;padding:0 15px;border-radius:999px;background:var(--primary);color:var(--onPrimary);font:700 13px/1 var(--fd);flex:none}
+
+.glass{background:color-mix(in srgb,var(--surface) 46%,transparent);-webkit-backdrop-filter:blur(14px) saturate(1.5);backdrop-filter:blur(14px) saturate(1.5);border:1px solid color-mix(in srgb,var(--ink) 16%,transparent);box-shadow:0 12px 34px rgba(0,0,0,.2)}
+.dock{position:absolute;left:12px;right:12px;bottom:12px;z-index:6;display:flex;flex-direction:column;gap:10px;pointer-events:none}
+.dock>*{pointer-events:auto}
+.panel{border-radius:30px;padding:12px 14px;display:flex;flex-direction:column;gap:12px}
+.bar{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}
+.bar button{display:flex;flex-direction:column;align-items:center;gap:6px;font:700 11.5px/1 var(--fb);color:var(--muted);padding:2px 0}
+.bi{width:48px;height:48px;border-radius:50%;background:color-mix(in srgb,var(--surface2) 78%,transparent);color:var(--ink);display:flex;align-items:center;justify-content:center}
+.bar .on{color:var(--ink)}.bar .on .bi{background:var(--primary);color:var(--onPrimary)}
+.fc{display:flex;flex-direction:column;gap:10px}
+
+.hold,.holdc{touch-action:none;user-select:none;-webkit-user-select:none;-webkit-touch-callout:none;transition:transform .15s}
+.hold{position:relative;overflow:hidden;width:100%;min-height:66px;border-radius:999px;background:var(--flare);color:var(--onFlare);display:flex;align-items:center;justify-content:center;gap:10px;font:var(--fdw) 18px/1 var(--fd);box-shadow:0 10px 26px color-mix(in srgb,var(--flare) 36%,transparent)}
+.hold>*{position:relative}
+.hold .fill{position:absolute;inset:0;background:rgba(0,0,0,.24);transform-origin:0 50%;transform:scaleX(0)}
+.hold.on .fill{animation:holdFill var(--hs) linear forwards}
+.hold small{font:500 12.5px/1 var(--fm);padding:5px 8px;border-radius:999px;background:rgba(0,0,0,.18)}
+.hold.test{min-height:52px;background:var(--surface2);color:var(--ink);box-shadow:none;font-size:15px}
+.hold.test .fill{background:color-mix(in srgb,var(--flare) 60%,transparent)}
+.hold.on,.holdc.on{transform:scale(.97)}
+.holdc{position:relative;border-radius:50%;background:var(--flare);color:var(--onFlare);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;box-shadow:0 14px 30px color-mix(in srgb,var(--flare) 34%,transparent)}
+.holdc b{font:var(--fdw) 20px/1 var(--fd);letter-spacing:-.01em}
+.holdc small{font:600 12px/1 var(--fb);opacity:.92}
+.holdc.s b{font-size:16px}.holdc.s{gap:6px}.holdc.s small{font-size:11px}
+.prog{position:absolute;inset:-13px;width:calc(100% + 26px);height:calc(100% + 26px);transform:rotate(-90deg);pointer-events:none}
+.prog circle{fill:none;stroke-width:4.5}
+.prog .trk{stroke:var(--line)}
+.prog .pb{stroke:var(--ink);stroke-linecap:round;stroke-dasharray:100;stroke-dashoffset:100}
+.on .prog .pb{animation:holdRing var(--hs) linear forwards}
+.hint{text-align:center;font:600 12.5px/1.3 var(--fb);color:var(--flareText)}
+
+.reach{position:relative;display:flex;justify-content:center}
+.chip{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font:600 13.5px/1 var(--fb);color:var(--ink);max-width:100%}
+.chip>.ic:first-child{color:var(--primary)}.chip>.ic:last-child{color:var(--muted)}
+.menu{position:absolute;left:50%;transform:translateX(-50%);top:calc(100% + 8px);width:306px;z-index:30;background:var(--surface);border:1px solid var(--line);border-radius:20px;padding:6px;box-shadow:0 18px 44px rgba(0,0,0,.32);display:flex;flex-direction:column;animation:fade .15s}
+.menu.up{top:auto;bottom:calc(100% + 8px)}
+.opt{display:flex;align-items:center;gap:12px;padding:12px;border-radius:14px;width:100%}
+.opt.on{background:var(--primarySoft)}
+.opt .rd{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none}
+.opt.on .rd{border:6px solid var(--primary)}
+.opt>span:not(.ic){flex:1;min-width:0}
+.opt b{display:block;font:700 14.5px/1.25 var(--fb)}.opt small{display:block;color:var(--muted);font-size:12.5px;line-height:1.3}
+.opt.more{color:var(--primary);font:700 13.5px/1.2 var(--fb)}
+.rbar{display:flex;flex-direction:column;gap:2px}
+.rtrack{position:relative;height:40px;margin:0 13px}
+.rtrack::before{content:"";position:absolute;left:-13px;right:-13px;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--line)}
+.rtrack i{position:absolute;left:-13px;top:50%;height:6px;margin-top:-3px;border-radius:3px;background:var(--ink)}
+.rtrack b{position:absolute;top:50%;width:26px;height:26px;margin:-13px 0 0 -13px;border-radius:50%;background:var(--ink);border:3px solid var(--bg);box-shadow:0 1px 4px rgba(0,0,0,.3)}
+.rtrack input{-webkit-appearance:none;appearance:none;position:absolute;left:-13px;top:0;width:calc(100% + 26px);height:100%;margin:0;opacity:0;cursor:pointer}
+.rends{display:flex;justify-content:space-between;font:500 12px/1 var(--fb);color:var(--muted)}
+.big{display:flex;align-items:baseline;gap:8px}
+.big b{font:var(--bigw) 44px/1 var(--fm);letter-spacing:-.04em}
+.big span{font-size:17px;color:var(--muted)}
+.big em{margin-left:auto;font-style:normal;font-size:12.5px;color:var(--muted)}
+
+.clip{position:absolute;inset:0;overflow:hidden;background:var(--mland)}
+.world{position:absolute;left:0;top:0;width:900px;height:1300px;transform-origin:0 0;transition:transform .7s cubic-bezier(.3,.7,.2,1)}
+.art,.links{position:absolute;inset:0;pointer-events:none}
+.m-land{fill:var(--mland)}.m-block{fill:var(--mblock)}.m-park{fill:var(--mpark)}.m-water{fill:none;stroke:var(--mwater)}.m-road{fill:none;stroke:var(--mroad);stroke-linecap:round}
+.m-lab{fill:var(--muted);font:600 11px 'Inter',system-ui,sans-serif;opacity:.85}
+.links line{stroke:var(--flare);stroke-width:2;stroke-dasharray:5 6}
+.ring{position:absolute;border-radius:50%;border:2px solid var(--flare);background:color-mix(in srgb,var(--flare) 10%,transparent);transition:width .16s linear,height .16s linear,margin .16s linear;pointer-events:none}
+.ring-lab{position:absolute;left:50%;top:0;transform:translate(-50%,-50%) scale(var(--inv,1));padding:3px 8px;border-radius:999px;background:var(--flare);color:var(--onFlare);font:700 11px/1.25 var(--fb);white-space:nowrap}
+.dot{position:absolute;width:7px;height:7px;margin:-3.5px;border-radius:50%;background:var(--muted);opacity:.38;transition:background .2s,opacity .2s}
+.dot.in{background:var(--flare);opacity:1;box-shadow:0 0 0 3px color-mix(in srgb,var(--flare) 26%,transparent)}
+.you{position:absolute;width:20px;height:20px;margin:-10px;border-radius:50%;background:var(--primary);border:3px solid #fff;box-shadow:0 0 0 14px var(--youHalo);transform:scale(var(--inv,1));z-index:1}
+.pin{position:absolute;transform:translate(-50%,-50%) scale(var(--inv,1));display:flex;flex-direction:column;align-items:center;gap:3px;z-index:2}
+.pa{width:34px;height:34px;border-radius:50%;background:var(--surface);color:var(--ink);border:2px solid var(--primary);display:flex;align-items:center;justify-content:center;font:700 13px/1 var(--fd);box-shadow:0 4px 10px rgba(0,0,0,.28)}
+.pin.live .pa{border-color:var(--safeDot);box-shadow:0 0 0 4px color-mix(in srgb,var(--safeDot) 32%,transparent),0 4px 10px rgba(0,0,0,.28)}
+.pin.tr .pa{border-color:var(--flare)}
+.pin.sel .pa{background:var(--primary);color:var(--onPrimary)}
+.pn{padding:2px 7px;border-radius:999px;background:var(--surface);color:var(--ink);font:700 10.5px/1.3 var(--fb);white-space:nowrap;border:1px solid var(--line)}
+.pin.live .pn{background:#3FAE83;color:#06231A;border-color:transparent}
+.maptop{position:absolute;left:14px;right:14px;top:16px;z-index:4;display:flex;flex-direction:column;gap:8px}
+.rowx{display:flex;gap:8px;align-items:center}
+.gcard{flex:1;min-width:0;border-radius:22px;padding:11px 16px;display:flex;flex-direction:column;gap:4px}
+.gcard .g{font-size:19px}.gcard .quiet{font-size:12.5px}
+.pill{display:flex;align-items:center;gap:8px;min-height:44px;padding:0 14px;border-radius:999px;font:700 13.5px/1 var(--fb);color:var(--ink);white-space:nowrap;flex:none}
+.pill.on{background:var(--primary);color:var(--onPrimary);border-color:transparent}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;margin:0 -14px;padding:0 14px}
+.chips::-webkit-scrollbar{display:none}
+.chips .pill{min-height:40px;padding:0 12px 0 8px;font-size:12.5px}
+.rnd{width:46px;height:46px;border-radius:50%;display:flex;align-items:center;justify-content:center;flex:none;color:var(--ink);font:700 16px/1 var(--fd)}
+.rnd.sm{width:38px;height:38px}
+.rnd.sf2{background:var(--surface2)}
+.seg{display:grid;grid-auto-flow:column;grid-auto-columns:1fr;gap:4px;padding:4px;border-radius:999px;background:var(--surface2)}
+.seg button{min-height:40px;padding:0 10px;border-radius:999px;display:flex;align-items:center;justify-content:center;font:700 13.5px/1 var(--fb);color:var(--muted);white-space:nowrap}
+.seg button.on{background:var(--primary);color:var(--onPrimary)}
+.seg.glass{background:color-mix(in srgb,var(--surface) 46%,transparent)}
+.seg.sw{flex:1;max-width:190px;margin:0 auto}
+.seg.sw button{min-height:38px}
+.pcard{border-radius:24px;padding:12px 12px 12px 14px;display:flex;align-items:center;gap:12px}
+.pcard .tx{flex:1;min-width:0;line-height:1.3}.pcard b{display:block;font:700 16px/1.25 var(--fd)}.pcard .tx span{font-size:12.5px;color:var(--muted)}.pcard .tx .lv{color:var(--safe);font-weight:700}
+
+.bhold{flex:1;position:relative;display:flex;align-items:center;justify-content:center;min-height:296px}
+.bmax{position:absolute;left:50%;top:50%;width:292px;height:292px;margin:-146px 0 0 -146px;border-radius:50%;border:1px dashed var(--line)}
+.orb{position:absolute;margin:-18px 0 0 -18px;border:2px solid var(--flare);z-index:1}
+.radar{position:relative;height:312px;flex:none}
+.radar .bmax{width:300px;height:300px;margin:-150px 0 0 -150px}
+.rc{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+.mapcard{position:relative;height:300px;margin:2px 16px 14px;border-radius:26px;overflow:hidden;border:1px solid var(--line);flex:none}
+.cardhit{position:absolute;inset:0;z-index:3}
+.mapcard .open{position:absolute;right:10px;top:10px;z-index:4;min-height:40px;font-size:12.5px}
+.mapcard .strip{position:absolute;left:10px;right:10px;bottom:10px;z-index:4}
+.mapcard .pin{pointer-events:none}
+
+.scrim{position:absolute;inset:0;z-index:5;background:var(--scrim);animation:fade .2s}
+.sheet{position:absolute;left:0;right:0;top:58px;bottom:0;z-index:5;background:var(--bg);border-radius:28px 28px 0 0;display:flex;flex-direction:column;animation:up .28s cubic-bezier(.2,.8,.2,1);box-shadow:0 -10px 40px rgba(0,0,0,.25)}
+.sheet-h{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:18px 18px 10px 24px}
+.sheet-b{flex:1;overflow-y:auto;padding:6px 24px 132px;display:flex;flex-direction:column;gap:20px;scrollbar-width:none}
+.sheet-b::-webkit-scrollbar{display:none}
+.sec{display:flex;flex-direction:column;gap:10px}
+.sec>h3{font:700 12px/1 var(--fb);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.list{background:var(--surface);border:1px solid var(--line);border-radius:var(--r);padding:0 14px}
+.li{display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid var(--line)}
+.li:last-child{border-bottom:0}
+.li .tx{flex:1;min-width:0;line-height:1.3}.li b{display:block;font:700 15px/1.25 var(--fb)}.li .tx span{font-size:12.5px;color:var(--muted)}
+.empty{font-size:13.5px;color:var(--muted);padding:14px;border-radius:var(--r);border:1px dashed var(--line);line-height:1.45}
+.tgl{width:52px;height:32px;border-radius:999px;background:var(--line);position:relative;flex:none;transition:background .2s}
+.tgl::after{content:"";position:absolute;top:3px;left:3px;width:26px;height:26px;border-radius:50%;background:var(--tk);transition:transform .2s;box-shadow:0 1px 3px rgba(0,0,0,.3)}
+.tgl.on{background:var(--primary)}.tgl.on::after{transform:translateX(20px)}
+.prof{display:flex;align-items:center;gap:14px}
+.prof .av{width:64px;height:64px;font-size:24px}
+.modal{position:absolute;inset:0;z-index:8;background:var(--scrim);display:flex;align-items:flex-end;animation:fade .2s}
+.modal form{width:100%;background:var(--bg);border-radius:28px 28px 0 0;padding:24px 24px 26px;display:flex;flex-direction:column;gap:14px;animation:up .26s}
+
+.over{position:absolute;inset:0;z-index:9;background:var(--bg);display:flex;flex-direction:column;animation:fade .2s}
+.over.c{align-items:center;justify-content:center;text-align:center;padding:0 32px;gap:14px}
+.spin{width:46px;height:46px;border-radius:50%;border:4px solid var(--line);border-top-color:var(--flare);animation:spin 1s linear infinite}
+.beac{position:relative;width:116px;height:116px;display:flex;align-items:center;justify-content:center;flex:none}
+.beac i{position:absolute;inset:14px;border-radius:50%;background:var(--flare);animation:pulse 1.8s ease-out infinite}
+.beac i+i{animation-delay:.9s}
+.beac b{position:relative;width:64px;height:64px;border-radius:50%;background:var(--flare);color:var(--onFlare);display:flex;align-items:center;justify-content:center}
+.okc{width:76px;height:76px;border-radius:50%;background:var(--safeSoft);color:var(--safe);display:flex;align-items:center;justify-content:center}
+.timer{font:500 54px/1 var(--fm);letter-spacing:-.03em;font-variant-numeric:tabular-nums}
+.resps{display:flex;flex-direction:column;gap:8px;width:100%;min-height:150px}
+.resp{display:flex;align-items:center;gap:10px;padding:9px 12px;border-radius:16px;background:var(--surface);border:1px solid var(--line);font-size:13.5px;line-height:1.3;animation:up .3s;text-align:left}
+.notes{display:flex;justify-content:center;gap:16px;flex-wrap:wrap;font:600 12.5px/1 var(--fb);color:var(--muted)}
+.notes span{display:flex;align-items:center;gap:6px}
+
+.nw{position:absolute;inset:0;z-index:10;--bg:#0B0F1A;--surface:#141A2A;--surface2:#1D2540;--ink:#EEF2FA;--muted:#A3AEC6;--line:#2A3350;--primary:#9DB2FF;--flare:#FF7A45;--onFlare:#1A0E08;--flareText:#FF9A70;--mland:#0F1524;--mblock:#172038;--mroad:#232D49;--mwater:#0E2A47;--mpark:#12281F;--youHalo:rgba(157,178,255,.22);background:var(--bg);color:var(--ink);font-family:'Manrope',system-ui,sans-serif;display:flex;flex-direction:column;animation:fade .25s}
+.nw-map{position:relative;height:372px;flex:none;overflow:hidden;background:var(--mland)}
+.nw-art{position:absolute;left:0;top:0;width:900px;height:1300px}
+.nw-fade{position:absolute;left:0;right:0;bottom:0;height:150px;background:linear-gradient(to bottom,transparent,var(--bg))}
+.fdot{position:absolute;width:40px;height:40px;transform:translate(-50%,-50%)}
+.fdot i{position:absolute;inset:0;border-radius:50%;background:var(--flare);animation:pulse 1.8s ease-out infinite}
+.fdot b{position:absolute;inset:0;border-radius:50%;background:var(--flare);border:3px solid #fff}
+.nw-t{flex:1;display:flex;flex-direction:column;gap:10px;padding:0 24px}
+.nw-eb{font:500 12px/1 'DM Mono',ui-monospace,monospace;letter-spacing:.2em;color:var(--flareText)}
+.nw-h{font:800 30px/1.14 'Manrope',system-ui,sans-serif;letter-spacing:-.025em;text-wrap:balance}
+.nw-n{font:500 60px/1 'DM Mono',ui-monospace,monospace;letter-spacing:-.04em}
+.nw-m{font:500 15px/1.5 'Manrope',system-ui,sans-serif;color:var(--muted)}
+.nw-r{display:flex;align-items:center;gap:8px;margin-top:6px;font:600 13px/1 'Manrope',system-ui,sans-serif;color:var(--muted)}
+.nw-b{padding:0 20px 24px;display:flex;flex-direction:column;gap:8px}
+.nw-open{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:66px;padding:0 22px;border-radius:999px;background:var(--flare);color:var(--onFlare);font:800 18px/1 'Manrope',system-ui,sans-serif}
+.nw-dis{min-height:52px;width:100%;display:flex;align-items:center;justify-content:center;font:700 15px/1 'Manrope',system-ui,sans-serif;color:var(--muted)}
+.nw-top{position:absolute;top:18px;left:16px;right:16px;display:flex;align-items:center;gap:12px}
+.nw-back{width:46px;height:46px;flex:none;border-radius:50%;background:var(--surface);border:1px solid var(--line);display:flex;align-items:center;justify-content:center}
+.nw-tag{display:flex;align-items:center;gap:10px;height:46px;padding:0 16px;border-radius:999px;background:var(--surface);border:1px solid var(--line);font:700 13.5px/1 'Manrope',system-ui,sans-serif}
+.nw-tag i{width:8px;height:8px;border-radius:50%;background:var(--flare)}
+.nw-card{position:absolute;left:12px;right:12px;bottom:12px;background:var(--surface);border:1px solid var(--line);border-radius:30px;padding:18px;display:flex;flex-direction:column;gap:14px}
+.nw-row{display:flex;align-items:center;gap:14px}
+.nw-av{width:52px;height:52px;flex:none;border-radius:50%;background:var(--flare);color:var(--onFlare);display:flex;align-items:center;justify-content:center;font:700 20px/1 'Manrope',system-ui,sans-serif}
+.nw-way{min-height:52px;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:8px;font:800 15px/1 'Manrope',system-ui,sans-serif;background:var(--surface2);color:var(--ink);width:100%}
+.nw-way.on{background:#12301F;color:#4CC38A}
+
+.toast{position:absolute;left:50%;top:18px;transform:translateX(-50%);z-index:13;width:max-content;max-width:340px;padding:11px 16px;border-radius:22px;background:var(--ink);color:var(--bg);font:600 13px/1.35 var(--fb);text-align:center;animation:drop .25s;box-shadow:0 10px 30px rgba(0,0,0,.3)}
+.banner{position:absolute;left:10px;right:10px;top:10px;z-index:12;border-radius:24px;padding:12px;display:flex;align-items:center;gap:10px;animation:drop .3s;background:var(--surface);color:var(--ink);border:1px solid var(--line);box-shadow:0 16px 40px rgba(0,0,0,.4)}
+.banner .tx{flex:1;min-width:0;font-size:13px;line-height:1.3}.banner b{display:block;font:700 14px/1.25 var(--fb)}.banner .tx span{color:var(--muted)}
+
+@keyframes holdFill{to{transform:scaleX(1)}}
+@keyframes holdRing{to{stroke-dashoffset:0}}
+@keyframes pulse{0%{transform:scale(.9);opacity:.55}100%{transform:scale(2.1);opacity:0}}
+@keyframes spin{to{transform:rotate(360deg)}}
+@keyframes fade{from{opacity:0}to{opacity:1}}
+@keyframes up{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes drop{from{transform:translate(var(--dx,0),-10px);opacity:0}to{opacity:1}}
+.toast{--dx:-50%}
+@media (prefers-reduced-motion:reduce){.beac i,.fdot i{animation:none;opacity:.3}.world{transition:none}.sheet,.scrim,.modal,.modal form,.over,.nw,.menu{animation:none}}
+
+/* ---------- Night Map v2: greeting island, Flare island, Home / Share / Map / You ---------- */
+.gisl{align-self:flex-start;max-width:100%;display:flex;align-items:center;gap:11px;padding:8px 18px 8px 8px;border-radius:28px}
+.gisl .gav{width:44px;height:44px;font-size:16px}
+.gtx{min-width:0;display:flex;flex-direction:column;gap:3px}
+.gisl .g{font-size:17px;line-height:1.2}
+.gisl .quiet{font-size:12.5px}
+.smini{flex:1;min-width:0;display:flex;align-items:center;gap:8px;min-height:44px;padding:0 5px 0 7px;border-radius:999px;font:700 13px/1 var(--fb);color:var(--ink)}
+.smt{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.smt em{font-style:normal;color:var(--safe)}
+.smini .see{min-height:34px;padding:0 13px;display:flex;align-items:center;font-size:12.5px}
+.av.xs.live{box-shadow:0 0 0 2px var(--surface),0 0 0 3.5px var(--safeDot)}
+.isl{gap:10px;padding:14px 14px 12px}
+.tbar{padding:10px 12px}
+
+.hwrap{position:relative}
+.rip{position:absolute;inset:0;border-radius:999px;border:2px solid var(--flare);opacity:0;pointer-events:none}
+.hwrap.on .rip{animation:ripPill 1.2s ease-out infinite}
+.hwrap.on .r2{animation-delay:.4s}.hwrap.on .r3{animation-delay:.8s}
+.hold .fill{transition:transform .35s ease-out}
+.hold.on .fill{animation:none;transition:transform 60ms linear}
+.hold small{font-variant-numeric:tabular-nums;min-width:46px;text-align:center}
+.htag{position:absolute;z-index:3;display:flex;align-items:center;gap:8px;white-space:nowrap;padding:9px 14px;border-radius:999px;background:var(--flare);color:var(--onFlare);font:700 13px/1 var(--fb);font-variant-numeric:tabular-nums;box-shadow:0 8px 22px rgba(0,0,0,.35);pointer-events:none;animation:tagIn .18s ease-out}
+.htag i{width:8px;height:8px;border-radius:50%;background:currentColor;flex:none;animation:blink .5s ease-in-out infinite alternate}
+.htag.off{background:var(--surface);color:var(--flareText);border:1px solid var(--line)}
+.htag.up{left:50%;bottom:calc(100% + 28px);translate:-50% 0}
+.htag.left{right:0;bottom:calc(100% + 18px)}
+
+.hround{position:relative;width:64px;height:64px;flex:none;margin:0 4px 4px 0}
+.hround .holdc{width:64px;height:64px;gap:0;z-index:1}
+.hround .holdc.on{transform:scale(1.08)}
+.hround .prog{inset:-8px;width:80px;height:80px}
+.prog .pb{transition:stroke-dashoffset .35s ease-out}
+.on .prog .pb{animation:none;transition:stroke-dashoffset 60ms linear}
+.wave{position:absolute;inset:0;border-radius:50%;background:var(--flare);opacity:0;pointer-events:none}
+.hround.on .wave{animation:wave 1.2s ease-out infinite}
+.hround.on .w2{animation-delay:.4s}.hround.on .w3{animation-delay:.8s}
+
+.mclip{touch-action:none;cursor:grab}
+.mclip:active{cursor:grabbing}
+.world.drag{transition:none}
+.route line{stroke:var(--primary);stroke-linecap:round}
+.rlab{position:absolute;z-index:1;transform:translate(-50%,-50%) scale(var(--inv,1));padding:5px 10px;border-radius:999px;background:var(--primary);color:var(--onPrimary);font:700 11.5px/1.2 var(--fb);white-space:nowrap;pointer-events:none;box-shadow:0 4px 12px rgba(0,0,0,.3)}
+.ylab{position:absolute;z-index:1;transform:translate(-50%,0) scale(var(--inv,1));transform-origin:50% 0;padding:2px 8px;border-radius:999px;background:var(--primary);color:var(--onPrimary);font:700 10.5px/1.3 var(--fb);pointer-events:none}
+.zoom{position:absolute;right:14px;top:72px;z-index:4;display:flex;flex-direction:column;gap:8px}
+.mrow{display:flex;align-items:flex-end;gap:10px}
+.dock>.mrow{pointer-events:none}
+.mrow>*{pointer-events:auto}
+.mrow .sp{flex:1}
+.fcard{flex:1;min-width:0}
+.fcard .tx span{display:block}
+
+.page{background:var(--bg)}
+.phd{display:flex;align-items:center;gap:12px;padding:24px 20px 6px;flex:none}
+.pbody{flex:1;min-height:0;overflow-y:auto;padding:12px 20px 128px;display:flex;flex-direction:column;gap:22px;scrollbar-width:none}
+.pbody::-webkit-scrollbar{display:none}
+.navrow{display:flex;align-items:center;gap:12px;padding:14px;width:100%;text-align:left}
+.navrow .tx{flex:1;min-width:0;line-height:1.3}
+.navrow b{display:block;font:700 15.5px/1.25 var(--fb)}
+.navrow .tx span{display:block;font-size:12.5px;color:var(--muted);margin-top:2px}
+.navrow>.ic:last-child{color:var(--muted)}
+.lirow{width:100%;text-align:left}
+.lirow .tx{display:block}
+.lirow .tx span{display:block}
+.lirow .go{color:var(--primary);display:flex;flex:none}
+.fieldlab{font:600 13px/1 var(--fb);color:var(--muted)}
+.sheet.pop{top:168px}
+.flash{position:absolute;inset:0;z-index:11;background:var(--flare);pointer-events:none;opacity:0;animation:flash .32s ease-out forwards}
+
+/* You page v3 */
+.ph{display:flex;flex-direction:column;align-items:center;text-align:center;gap:4px}
+.photo{position:relative;width:92px;height:92px;margin-bottom:8px;border-radius:50%;background:var(--primarySoft) center/cover no-repeat;color:var(--primary);display:flex;align-items:center;justify-content:center;font:700 34px/1 var(--fd);cursor:pointer}
+.photo .cam{position:absolute;right:-2px;bottom:-2px;width:34px;height:34px;border-radius:50%;background:var(--primary);color:var(--onPrimary);border:3px solid var(--bg);display:flex;align-items:center;justify-content:center}
+.ph .nm{font:var(--fdw) 22px/1.2 var(--fd);letter-spacing:-.015em}
+.ph .un{font:500 14.5px/1.3 var(--fm);color:var(--primary)}
+.ph .link{min-height:36px;width:auto;padding:0 12px;font-size:13px;color:var(--primary);cursor:pointer}
+.av.img{background-size:cover;background-position:center;background-repeat:no-repeat;color:transparent}
+.grp{display:flex;flex-direction:column;gap:8px}
+.grp>h3{font:700 12px/1 var(--fb);letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+.srow{display:flex;align-items:center;gap:12px;width:100%;min-height:58px;padding:10px 0;border-bottom:1px solid var(--line);text-align:left}
+.list>.srow:last-child{border-bottom:0}
+.srow .pi{width:34px;height:34px;border-radius:10px}
+.srow .lb{flex:1;min-width:0;font:700 15px/1.25 var(--fb)}
+.srow .vl{max-width:48%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--muted);font:500 13.5px/1.2 var(--fb)}
+.srow>.ic:last-child{color:var(--muted)}
+.seg.sm3{flex:none;width:156px}
+.seg.sm3 button{min-height:34px;font-size:12.5px}
+.vh{position:absolute;width:1px;height:1px;opacity:0;overflow:hidden}
+.app label.btn{cursor:pointer}
+.modal .msheet{width:100%;max-height:88%;overflow-y:auto;background:var(--bg);border-radius:28px 28px 0 0;padding:24px 24px 26px;display:flex;flex-direction:column;gap:14px;animation:up .26s}
+.trow{gap:8px}
+.tsel{flex:1;min-width:0;display:flex;align-items:center;gap:12px;min-height:44px;text-align:left}
+.tsel .rd{width:20px;height:20px;border-radius:50%;border:2px solid var(--muted);flex:none}
+.tsel.on .rd{border:6px solid var(--primary)}
+.tsel .tx{display:block;flex:1;min-width:0}
+.tsel .tx span{display:block}
+.inwrap{position:relative}
+.inwrap .lead{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:var(--muted);display:flex;pointer-events:none}
+.inwrap .lead+input{padding-left:42px}
+.inwrap.at::before{content:"@";position:absolute;left:16px;top:50%;transform:translateY(-50%);font:600 16px var(--fb);color:var(--muted);pointer-events:none}
+.inwrap.at input{padding-left:36px}
+.mini:disabled{cursor:default}
+
+@keyframes ripPill{0%{transform:scale(1);opacity:.75}100%{transform:scale(1.1,1.75);opacity:0}}
+@keyframes wave{0%{transform:scale(1);opacity:.5}100%{transform:scale(2.7);opacity:0}}
+@keyframes tagIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@keyframes blink{to{opacity:.3}}
+@keyframes flash{0%{opacity:0}35%{opacity:.8}100%{opacity:0}}
+@media (prefers-reduced-motion:reduce){.rip,.wave,.htag,.htag i{animation:none!important}.flash{animation:none;opacity:.4}}
+</style>
+
+<div class="wrap">
+  <header class="hd">
+    <div class="ttl"><h1>Clarion · Night Map</h1><p>One working mockup. It opens signed in as Zerubbabel. Tap and hold anything.</p></div>
+  </header>
+  <main class="stage">
+    <div class="phone-box" id="pbox"><div class="phone" id="phone"><div class="screen"><div class="mount" id="mount"></div></div></div></div>
+    <div class="side">
+      <div class="actions">
+        <button type="button" class="act hot" id="act-flare"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 3v4.2M12 16.8V21M3 12h4.2M16.8 12H21M5.6 5.6l3 3M15.4 15.4l3 3M5.6 18.4l3-3M15.4 8.6l3-3"></path><circle cx="12" cy="12" r="1.9"></circle></svg><span class="long">Neighbour sends a Flare</span><span class="short">Incoming Flare</span></button>
+        <button type="button" class="act plain" id="act-share"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20.5 3.5 3.5 10.6l6.6 2.8 2.8 6.6z"></path></svg><span class="long">Friend shares location</span><span class="short">Friend shares</span></button>
+        <button type="button" class="act plain" id="act-restart"><svg aria-hidden="true" viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12a8 8 0 1 0 2.4-5.7"></path><path d="M4 4v4.5h4.5"></path></svg><span class="long">Start again from sign-in</span><span class="short">Restart</span></button>
+      </div>
+      <div class="about">
+        <div class="tag">Mockup 1 · version 2</div>
+        <h2>Night Map</h2>
+        <p>The map is still your home screen, in Night Watch’s dark colours. This version gives the map more room, puts the Flare button on its own island, and adds a clean Map tab.</p>
+        <h3>What changed</h3>
+        <ul>
+          <li>The greeting is one small glass island: your letter button, then “Good evening, Zerubbabel” and “All quiet in your circle”. It is only as wide as the words.</li>
+          <li>“Fatima · Live · See” sits beside Find my circle. When two or more people share, it shows “+1” and opens Share.</li>
+          <li>The Flare button, the “Reaches…” chip and the radius bar are one island, above the tabs.</li>
+          <li>While you hold a Flare button you see a countdown (“sending in 0.9 s”) and orange ripples. Let go early and nothing is sent.</li>
+          <li>The tabs are Home, Share, Map, You. Home, Map and You are full pages. Share is a pop-up.</li>
+          <li>The Map tab shows only you and the people sharing with you. You can drag and zoom it, and tap a name to see the way to them. It has a small Flare button with the same countdown.</li>
+          <li>The You page is grouped like your real Profile screen: your photo and @username on top, then Account, Flare, Alerts and Appearance. Each row opens its own page.</li>
+          <li>Upload a profile photo, and set a username friends can search to add you. Adding someone now works by username, phone number or email, the same as your app.</li>
+          <li>Flare ringtone: Clarion SOS tones, your phone’s ringtones, or your own sound file. Tap Play to hear each one.</li>
+          <li>In Share, “Sharing with you” comes first. Tap a person and the Map tab shows the way from you to them.</li>
+        </ul>
+        <h3>Try this</h3>
+        <ol>
+          <li>On Home, press and hold “Hold to send a Flare”. Watch the countdown and ripples, and let go early once to see that nothing is sent.</li>
+          <li>Tap “Reaches everyone within…” to switch between distance and trusted circle. Drag the bar to change the distance. The orange dots are the neighbours a Flare would reach.</li>
+          <li>Tap See on the Fatima pill. The Map tab opens with the way from you to her.</li>
+          <li>On the Map tab, drag the map, zoom with + and − (or pinch, or your mouse wheel), and tap the target button to come back to yourself.</li>
+          <li>Hold the small orange Flare button on the Map tab.</li>
+          <li>Press “Friend shares location” beside the phone. The pill changes to “Chidi +1” and opens Share.</li>
+          <li>Open You and tap the camera to upload a photo. It also appears in your greeting on Home.</li>
+          <li>Tap Username and try “fatima.sani” (taken) or a new one. Then open Who gets my Flare, tap Add someone and search “ibro” or “0803”.</li>
+          <li>Open Flare ringtone, press Play on each SOS tone, then add a sound file from your device.</li>
+          <li>Press “Neighbour sends a Flare” beside the phone to see an incoming alert.</li>
+        </ol>
+        <p class="note">Neighbours, places and the map are sample data. Nothing here touches your real app.</p>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/preact/10.24.3/preact.umd.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/htm/3.1.1/htm.umd.min.js"></script>
+<script>/* backup copies if the first server is slow or unreachable */
+window.preact || document.write('<script src="https://unpkg.com/preact@10.24.3/dist/preact.umd.js"><\/script>');
+window.htm || document.write('<script src="https://unpkg.com/htm@3.1.1/dist/htm.umd.js"><\/script>');</script>
+<script>
+(function(){
+const { h, render, Component } = preact;
+const html = htm.bind(h);
+const MOCK = { id:1, skin:'sk1', dark:true };
+const MINKM = .3, MAXKM = 5, LN = Math.log(MAXKM / MINKM);
+const kmOf = t => MINKM * Math.exp(LN * t);
+const tOf = km => Math.log(km / MINKM) / LN;
+function fmtKm(km){ if (km < .95) return Math.round(km * 100) * 10 + ' m'; const t = (Math.round(km * 10) / 10).toFixed(1); return (t.slice(-2) === '.0' ? t.slice(0, -2) : t) + ' km'; }
+function rOf(km, rmin, rmax){ const t = tOf(km); return t < 0 ? rmin * km / MINKM : rmin + (rmax - rmin) * Math.min(t, 1.06); }
+const fmtS = v => (v === Math.round(v) ? v : v.toFixed(1)) + ' s';
+const first = n => String(n || '').trim().split(/\s+/)[0] || 'there';
+const ini = n => (String(n || '').trim().charAt(0) || '?').toUpperCase();
+function nameFrom(email){ const w = String(email).split('@')[0].split(/[^A-Za-z]+/).filter(Boolean).map(x => x.charAt(0).toUpperCase() + x.slice(1).toLowerCase()); return w.slice(0, 2).join(' ') || 'Zainab'; }
+function greeting(){ const hr = new Date().getHours(); return hr < 12 ? 'Good morning' : (hr < 17 ? 'Good afternoon' : 'Good evening'); }
+const KNOWN = { 'Amina Bello':{ km:.35, ang:-.9 }, 'Chidi Okafor':{ km:1.1, ang:2.5 }, 'Fatima Sani':{ km:.6, ang:.62 }, 'Tunde Adeyemi':{ km:1.6, ang:4 } };
+function person(n){ if (KNOWN[n]) return KNOWN[n]; let x = 7; for (const c of String(n)) x = (x * 31 + c.charCodeAt(0)) % 9973; return (KNOWN[n] = { km:.4 + (x % 23) / 10, ang:(x % 628) / 100 }); }
+const DOTS = (() => { let s = 7; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647; const a = []; for (let i = 0; i < 46; i++) a.push({ km:.18 + 5.4 * Math.pow(rnd(), 1.7), ang:rnd() * 6.283 }); return a; })();
+const inRange = km => DOTS.filter(d => d.km <= km).length;
+const YOU = { x:450, y:650 };
+const wpos = n => { const p = person(n), r = rOf(p.km, 44, 215); return { x:YOU.x + r * Math.cos(p.ang), y:YOU.y + r * Math.sin(p.ang) }; };
+const pinsOf = s => { const a = s.trusted.slice(); s.sharedIn.forEach(x => { if (!a.includes(x.name)) a.push(x.name); }); return a; };
+const MAP_SVG = (() => {
+  let s = 11; const rnd = () => (s = (s * 16807) % 2147483647) / 2147483647;
+  let o = '<svg viewBox="0 0 900 1300" width="900" height="1300" aria-hidden="true" style="display:block"><rect class="m-land" width="900" height="1300"/>';
+  for (let y = 14; y < 1300; y += 92) for (let x = 14; x < 900; x += 98) { if (rnd() < .15) continue; o += '<rect class="m-block" x="' + (x + 4) + '" y="' + (y + 4) + '" width="' + Math.round(70 + rnd() * 16) + '" height="' + Math.round(60 + rnd() * 18) + '" rx="7"/>'; }
+  o += '<rect class="m-park" x="560" y="930" width="190" height="170" rx="18"/><rect class="m-park" x="60" y="250" width="140" height="150" rx="18"/>';
+  o += '<path class="m-water" stroke-width="64" d="M-30 170C140 140 250 50 430 84S700 210 930 120"/>';
+  o += '<path class="m-road" stroke-width="16" d="M0 470H900M0 840H900M0 1120H900M210 0V1300M760 0V1300"/><path class="m-road" stroke-width="20" d="M-10 1010C200 900 370 730 520 560S760 300 910 240"/>';
+  [['Ridgeway Lodge', 536, 552], ['Main Gate', 566, 760], ['Unity Hostel', 236, 772], ['Library', 292, 566], ['Sports Field', 606, 1022], ['Gardens', 100, 332]].forEach(l => { o += '<text class="m-lab" x="' + l[1] + '" y="' + l[2] + '">' + l[0] + '</text>'; });
+  return o + '</svg>';
+})();
+const ICONS = {
+  people:'<circle cx="9" cy="8.5" r="3.2"/><path d="M3 19.5c0-3.2 2.6-5.3 6-5.3s6 2.1 6 5.3"/><circle cx="17.3" cy="9.5" r="2.5"/><path d="M16.8 14.4c2.5.2 4.2 2 4.2 4.6"/>',
+  share:'<path d="M20.5 3.5 3.5 10.6l6.6 2.8 2.8 6.6z"/>',
+  moon:'<path d="M20 14.2A8 8 0 1 1 9.8 4a6.5 6.5 0 0 0 10.2 10.2z"/>',
+  user:'<circle cx="12" cy="8.2" r="3.7"/><path d="M4.5 20c0-3.9 3.2-6.4 7.5-6.4s7.5 2.5 7.5 6.4"/>',
+  bell:'<path d="M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z"/><path d="M10 20.5a2 2 0 0 0 4 0"/>',
+  pin:'<path d="M12 21s-6.5-5.6-6.5-11a6.5 6.5 0 0 1 13 0c0 5.4-6.5 11-6.5 11z"/><circle cx="12" cy="10" r="2.3"/>',
+  check:'<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  flare:'<path d="M12 3v4.2M12 16.8V21M3 12h4.2M16.8 12H21M5.6 5.6l3 3M15.4 15.4l3 3M5.6 18.4l3-3M15.4 8.6l3-3"/><circle cx="12" cy="12" r="1.9"/>',
+  chev:'<path d="m6 9 6 6 6-6"/>', chevR:'<path d="m9 6 6 6-6 6"/>', back:'<path d="m15 5-7 7 7 7"/>', x:'<path d="M6 6l12 12M18 6 6 18"/>', plus:'<path d="M12 5v14M5 12h14"/>',
+  target:'<circle cx="12" cy="12" r="7"/><circle cx="12" cy="12" r="2.2"/><path d="M12 2.5v3M12 18.5v3M2.5 12h3M18.5 12h3"/>',
+  map:'<path d="M9 4 3.5 6v14L9 18l6 2 5.5-2V4L15 6z"/><path d="M9 4v14M15 6v14"/>',
+  shield:'<path d="M12 3 5 6v5.5c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"/>',
+  expand:'<path d="M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7"/>'
+};
+const I = (n, sz, sw) => html`<span class="ic" dangerouslySetInnerHTML=${{ __html:'<svg viewBox="0 0 24 24" width="' + (sz || 20) + '" height="' + (sz || 20) + '" fill="none" stroke="currentColor" stroke-width="' + (sw || 1.9) + '" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">' + ICONS[n] + '</svg>' }}></span>`;
+const LOGO = sz => html`<span class="ic" dangerouslySetInnerHTML=${{ __html:'<svg viewBox="0 0 24 24" width="' + sz + '" height="' + sz + '" fill="none" aria-hidden="true"><path d="M17.75 5.61A8.6 8.6 0 1 0 17.75 18.39" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"/><circle cx="19.4" cy="12" r="2.5" style="fill:var(--flare)"/></svg>' }}></span>`;
+function Reach(s, app, up){
+  const km = kmOf(s.t), n = s.trusted.length, rad = s.mode === 'radius';
+  return html`<div class="reach">
+    <button type="button" class="chip" aria-expanded=${s.chip ? 'true' : 'false'} onClick=${() => app.setState({ chip:!s.chip })}>${I(rad ? 'pin' : 'people', 18)}<span>${rad ? 'Reaches everyone within ' + fmtKm(km) : 'Reaches your trusted circle · ' + n}</span>${I('chev', 16, 2.2)}</button>
+    ${s.chip && html`<div class=${'menu' + (up ? ' up' : '')}>
+      <button type="button" class=${'opt' + (rad ? ' on' : '')} onClick=${() => app.setMode('radius')}><i class="rd"></i><span><b>By distance</b><small>Everyone with Clarion within ${fmtKm(km)}</small></span></button>
+      <button type="button" class=${'opt' + (rad ? '' : ' on')} onClick=${() => app.setMode('circle')}><i class="rd"></i><span><b>Trusted circle</b><small>${n ? 'Only the ' + n + ' people you chose' : 'Nobody added yet'}</small></span></button>
+      <button type="button" class="opt more" onClick=${() => app.openPeople()}><span>Choose who is in your circle</span>${I('chevR', 16, 2.2)}</button>
+    </div>`}
+  </div>`;
+}
+function RadiusBar(s, app, key){
+  if (s.mode !== 'radius') return null;
+  const pct = Math.round(s.t * 100);
+  return html`<div class="rbar"><div class="rtrack"><i style=${'width:calc(' + pct + '% + 13px)'}></i><b style=${'left:' + pct + '%'}></b>
+    <input type="range" min="0" max="100" id=${'rad-' + key} value=${pct} aria-label="Flare radius" aria-valuetext=${fmtKm(kmOf(s.t))} onInput=${e => app.setState({ t:e.target.value / 100, chip:false })}/></div>
+    <div class="rends"><span>300 m</span><span>5 km</span></div></div>`;
+}
+const FindBtn = (s, app) => html`<button type="button" class=${'pill glass' + (s.fit ? ' on' : '')} aria-pressed=${s.fit ? 'true' : 'false'} onClick=${() => app.toggleFit()}>${I('target', 18)}${s.fit ? 'Back to me' : 'Find my circle'}</button>`;
+const FitChips = (s, app) => s.fit && s.trusted.length ? html`<div class="chips">${s.trusted.map(n => html`<button type="button" class=${'pill glass' + (s.sel === n ? ' on' : '')} onClick=${() => app.select(n)}><span class="av xs">${ini(n)}</span>${first(n)} · ${fmtKm(person(n).km)}</button>`)}</div>` : null;
+function World(s, app, o){
+  const km = kmOf(s.t), rr = rOf(km, 44, 215), circle = s.mode === 'circle';
+  let c = YOU, sc = o.base || 1;
+  if (!o.mini) {
+    if (s.sel) { c = wpos(s.sel); sc = 1.5; }
+    else if (s.fit && s.trusted.length) {
+      const pts = [YOU].concat(s.trusted.map(wpos)), xs = pts.map(p => p.x), ys = pts.map(p => p.y);
+      const x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs), y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+      c = { x:(x0 + x1) / 2, y:(y0 + y1) / 2 };
+      sc = Math.max(.8, Math.min(1.9, (o.w - 130) / Math.max(60, x1 - x0), (o.avail - 90) / Math.max(60, y1 - y0)));
+    }
+  }
+  const tx = o.cx - c.x * sc, ty = o.cy - c.y * sc;
+  return html`<div class="clip"><div class="world" style=${'transform:translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + sc.toFixed(3) + ');--inv:' + (1 / sc).toFixed(3)}>
+    <div class="art" dangerouslySetInnerHTML=${{ __html:MAP_SVG }}></div>
+    ${circle && html`<svg class="links" viewBox="0 0 900 1300" width="900" height="1300" aria-hidden="true">${s.trusted.map(n => { const p = wpos(n); return html`<line x1=${YOU.x} y1=${YOU.y} x2=${p.x.toFixed(1)} y2=${p.y.toFixed(1)}/>`; })}</svg>`}
+    ${!circle && html`<div class="ring" style=${'left:' + YOU.x + 'px;top:' + YOU.y + 'px;width:' + (2 * rr).toFixed(1) + 'px;height:' + (2 * rr).toFixed(1) + 'px;margin:' + (-rr).toFixed(1) + 'px 0 0 ' + (-rr).toFixed(1) + 'px'}><span class="ring-lab">${fmtKm(km)}</span></div>`}
+    ${DOTS.map(d => { const r = rOf(d.km, 44, 215); return html`<i class=${'dot' + (!circle && d.km <= km ? ' in' : '')} style=${'left:' + (YOU.x + r * Math.cos(d.ang)).toFixed(1) + 'px;top:' + (YOU.y + r * Math.sin(d.ang)).toFixed(1) + 'px'}></i>`; })}
+    <i class="you" style=${'left:' + YOU.x + 'px;top:' + YOU.y + 'px'}></i>
+    ${pinsOf(s).map(n => { const p = wpos(n), live = s.sharedIn.some(x => x.name === n);
+      return html`<button type="button" class=${'pin' + (live ? ' live' : '') + (s.sel === n ? ' sel' : '') + (circle && s.trusted.includes(n) ? ' tr' : '')} style=${'left:' + p.x.toFixed(1) + 'px;top:' + p.y.toFixed(1) + 'px'} tabindex=${o.mini ? -1 : 0} aria-label=${'Show ' + n} onClick=${() => app.select(n)}><span class="pa">${ini(n)}</span><span class="pn">${first(n)}${live ? ' · LIVE' : ''}</span></button>`; })}
+  </div></div>`;
+}
+
+/* ---------- screens ---------- */
+function Auth(s, app, m){
+  return html`<form class="view pad" novalidate onSubmit=${e => { e.preventDefault(); app.signIn(); }}>
+    <div class="brand">${LOGO(28)}Clarion</div>
+    <div class="stack" style="margin-top:40px"><h1 class="h1">${s.signUp ? 'Create your account' : 'Welcome back'}</h1><p class="sub">${s.signUp ? 'Your account keeps Flares trustworthy: no fake alerts, no spam.' : 'Log in to reach your circle.'}</p></div>
+    <div class="stack" style="margin-top:26px;gap:14px">
+      <div class="field"><label for=${'em-' + m.id}>Email</label><input id=${'em-' + m.id} type="text" inputmode="email" autocomplete="off" autocapitalize="off" placeholder="you@example.com" value=${s.email} onInput=${e => app.setState({ email:e.target.value, aErr:'' })}/></div>
+      <div class="field"><label for=${'pw-' + m.id}>Password</label><input id=${'pw-' + m.id} type="password" autocomplete="off" placeholder="Any password" value=${s.pass} onInput=${e => app.setState({ pass:e.target.value, aErr:'' })}/></div>
+      ${s.aErr && html`<div class="err" role="alert">${s.aErr}</div>`}
+      <p class="demo">This is a mockup: any email and any password will sign you in.</p>
+    </div>
+    <div class="stack" style="margin-top:auto;gap:6px">
+      <button class="btn" type="submit">${s.signUp ? 'Create account' : 'Log in'}</button>
+      <button type="button" class="link" onClick=${() => app.setState({ signUp:!s.signUp, aErr:'' })}>${s.signUp ? 'Already have an account? Log in' : 'New here? Create an account'}</button>
+    </div></form>`;
+}
+function Ob1(s, app, m){
+  return html`<form class="view pad" novalidate onSubmit=${e => { e.preventDefault(); app.ob1(); }}>
+    <div class="steps"><i class="on"></i><i></i></div>
+    <div class="stack" style="margin-top:28px"><h1 class="h1">Tell us who you are</h1><p class="sub">Your circle is the people who share your building or block.</p></div>
+    <div class="stack" style="margin-top:26px;gap:14px">
+      <div class="field"><label for=${'nm-' + m.id}>Your name</label><input id=${'nm-' + m.id} type="text" autocomplete="off" placeholder="Your full name" value=${s.name} onInput=${e => app.setState({ name:e.target.value })}/></div>
+      <div class="field"><label for=${'lg-' + m.id}>Lodge, building, or shop</label><input id=${'lg-' + m.id} type="text" autocomplete="off" placeholder="e.g. Ridgeway Lodge, Block C" value=${s.lodge} onInput=${e => app.setState({ lodge:e.target.value })}/></div>
+      <p class="sub sm">Everyone who enters the same name shares your night-time close circle automatically.</p>
+    </div>
+    <div class="stack" style="margin-top:auto;gap:6px"><button class="btn" type="submit">Continue</button><button type="button" class="link" onClick=${() => app.setState({ phase:'auth' })}>Back</button></div></form>`;
+}
+function Ob2(s, app){
+  const row = (k, t, d, ic) => html`<div class="perm"><span class="pi">${I(ic, 20)}</span><div class="tx"><b>${t}</b><span>${d}</span></div><button type="button" class=${'mini ' + (s[k] ? 'ok' : 'pr')} onClick=${() => app.setState({ [k]:true })}>${s[k] ? html`${I('check', 14, 2.6)}Allowed` : 'Allow'}</button></div>`;
+  return html`<div class="view pad">
+    <div class="steps"><i class="on"></i><i class="on"></i></div>
+    <div class="stack" style="margin-top:28px"><h1 class="h1">Two permissions we need</h1><p class="sub">Nothing works without these. Here is exactly why.</p></div>
+    <div class="stack" style="margin-top:24px;gap:12px">
+      ${row('loc', 'Location', 'So a Flare carries your exact spot, and others can be routed straight to you.', 'pin')}
+      ${row('notif', 'Notifications', 'So a Flare can ring your phone even when Clarion isn’t open.', 'bell')}
+    </div>
+    <div class="stack" style="margin-top:auto;gap:6px"><button type="button" class="btn" onClick=${() => app.finish()}>Finish setup</button><button type="button" class="link" onClick=${() => app.setState({ phase:'ob1' })}>Back</button></div></div>`;
+}
+function PersonCard(s, app){
+  const n = s.sel, p = person(n), sh = s.sharedIn.find(x => x.name === n);
+  return html`<div class="glass pcard"><span class=${'av' + (sh ? ' live' : '')}>${ini(n)}</span><div class="tx"><b>${n}</b>${sh ? html`<span class="lv">Live now · ${fmtKm(p.km)} away</span><span style="display:block">Sharing for ${sh.left.replace(' left', ' more')}</span>` : html`<span>${fmtKm(p.km)} away · last seen 12 min ago</span>`}</div>
+    <button type="button" class="rnd sm" aria-label="Close" onClick=${() => app.setState({ sel:null })}>${I('x', 18, 2.2)}</button></div>`;
+}
+const Rows = (names, sub, btn, act, empty) => names.length ? html`<div class="list">${names.map(n => html`<div class="li"><span class="av sm">${ini(n)}</span><div class="tx"><b>${n}</b><span>${sub(n)}</span></div><button type="button" class="mini" onClick=${() => act(n)}>${btn}</button></div>`)}</div>` : html`<p class="empty">${empty}</p>`;
+function People(s, app){
+  const km = kmOf(s.t), parts = fmtKm(km).split(' '), rad = s.mode === 'radius';
+  return html`<div class="seg"><button type="button" class=${rad ? 'on' : ''} onClick=${() => app.setMode('radius')}>By distance</button><button type="button" class=${rad ? '' : 'on'} onClick=${() => app.setMode('circle')}>Trusted circle</button></div>
+    ${rad ? html`<div class="sec"><h3>Broadcast radius</h3><div class="big"><b>${parts[0]}</b><span>${parts[1]}</span></div>${RadiusBar(s, app, 'p')}<p class="sub sm">Everyone with Clarion inside this range gets your Flare. About ${inRange(km)} neighbours are in range right now.</p></div>`
+      : html`<div class="sec"><h3>Trusted circle · ${s.trusted.length}</h3>${Rows(s.trusted, n => fmtKm(person(n).km) + ' away', 'Remove', n => app.remove('trusted', n), 'Nobody in your trusted circle yet.')}<button type="button" class="btn gh" onClick=${() => app.openAdd('trusted')}>${I('plus', 18, 2.2)}Add someone</button><p class="sub sm">Only these people get your Flare, wherever they are.</p></div>`}
+    <div class="sec"><h3>Exclude list</h3>${Rows(s.excluded, () => 'Never gets your Flare', 'Remove', n => app.remove('excluded', n), 'Nobody is excluded.')}<button type="button" class="btn gh" onClick=${() => app.openAdd('excluded')}>${I('plus', 18, 2.2)}Exclude someone</button></div>`;
+}
+function FlareOver(s, app){
+  if (s.flare === 'locating') return html`<div class="over c"><i class="spin"></i><div class="h2">Getting your location…</div></div>`;
+  if (s.flare === 'noperm') return html`<div class="over c"><span class="pi" style="width:64px;height:64px;border-radius:20px">${I('pin', 30)}</span><h1 class="h1">Location permission needed</h1><p class="sub">Clarion can’t send a Flare without your location. Allow it once and you’re set.</p><button type="button" class="btn" style="margin-top:10px" onClick=${() => app.grantLoc()}>Allow location</button><button type="button" class="link" onClick=${() => app.setState({ flare:null })}>Not now</button></div>`;
+  if (s.flare === 'cancelled') return html`<div class="over c"><span class="okc">${I('check', 36, 2.4)}</span><h1 class="h1">Flare cancelled</h1><p class="sub">You’re marked safe. Nobody will be alerted further.</p><button type="button" class="btn" style="margin-top:10px" onClick=${() => app.setState({ flare:null })}>Back to Clarion</button></div>`;
+  const e = s.elapsed, km = kmOf(s.t), a = s.trusted[0] || 'Amina Bello', b = s.trusted[1] || 'Chidi Okafor';
+  const mm = String(Math.floor(e / 60)).padStart(2, '0'), ss = String(e % 60).padStart(2, '0');
+  return html`<div class="over"><div class="pad" style="flex:1;display:flex;flex-direction:column;align-items:center;text-align:center;gap:12px;padding-top:44px">
+      <div class="beac"><i></i><i></i><b>${I('flare', 30, 2.2)}</b></div>
+      <div class="eyebrow">Flare active</div><h1 class="h1">Your Flare is out</h1>
+      <p class="sub">${s.mode === 'radius' ? 'Sent to everyone within ' + fmtKm(km) : 'Sent to your trusted circle · ' + s.trusted.length + ' people'}</p>
+      <div class="timer">${mm}:${ss}</div>
+      <div class="resps">
+        ${e >= 2 && html`<div class="resp"><span class="av sm">${ini(a)}</span><span><b>${a}</b> has seen your Flare</span></div>`}
+        ${e >= 5 && html`<div class="resp"><span class="av sm">${ini(b)}</span><span><b>${b}</b> is on the way · about 4 min</span></div>`}
+        ${e >= 8 && s.mode === 'radius' && html`<div class="resp"><span class="av sm">${I('people', 18)}</span><span><b>${inRange(km)} neighbours</b> in range have been alerted</span></div>`}
+      </div></div>
+    <div class="pad" style="padding-top:0;display:flex;flex-direction:column;gap:14px">
+      <div class="notes"><span>${I('bell', 15)}Your phone stays silent</span><span>${I('shield', 15)}Only you can cancel this</span></div>
+      <button type="button" class="btn sf" onClick=${() => app.safe()}>${I('check', 20, 2.6)}I’m safe</button></div></div>`;
+}
+function Incoming(s, app){
+  const art = (x, y) => html`<div class="nw-art" style=${'transform:translate(' + x + 'px,' + y + 'px)'} dangerouslySetInnerHTML=${{ __html:MAP_SVG }}></div>`;
+  if (s.incoming === 'alert') return html`<div class="nw" role="alertdialog" aria-label="Flare alert">
+    <div class="nw-map">${art(-288, -437)}<div class="nw-fade"></div><div class="fdot" style="left:50%;top:46%"><i></i><b></b></div></div>
+    <div class="nw-t"><div class="nw-eb">FLARE ALERT</div><div class="nw-h">Amina Bello sent a Flare</div>
+      <div style="display:flex;align-items:baseline;gap:10px;margin-top:6px"><div class="nw-n">350</div><div class="nw-m">metres away · Ridgeway Lodge</div></div>
+      <div class="nw-r">${I('bell', 16)}Ringing until you respond</div></div>
+    <div class="nw-b"><button type="button" class="nw-open" onClick=${() => app.setState({ incoming:'map' })}>${I('pin', 20)}Open map</button><button type="button" class="nw-dis" onClick=${() => app.setState({ incoming:'dismissed' })}>Dismiss</button></div></div>`;
+  if (s.incoming === 'map') return html`<div class="nw" style="display:block;overflow:hidden;background:var(--mland)">${art(-288, -254)}
+    <div class="fdot" style="left:50%;top:42%;width:34px;height:34px"><i></i><b></b></div>
+    <i class="you" style="left:22%;top:66%"></i>
+    <div class="nw-top"><button type="button" class="nw-back" aria-label="Back to Clarion" onClick=${() => app.setState({ incoming:null })}>${I('back', 20, 2.2)}</button><div class="nw-tag"><i></i>Amina Bello’s Flare</div></div>
+    <div class="nw-card"><div class="nw-row"><div class="nw-av">A</div>
+        <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:5px"><div style="font:700 17px/1.3 'Manrope',system-ui,sans-serif">Amina Bello</div><div style="font:500 13px/1.5 'Manrope',system-ui,sans-serif;color:var(--muted);white-space:nowrap">Ridgeway Lodge · active now</div></div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px"><div style="font:500 26px/1 'DM Mono',ui-monospace,monospace">350</div><div style="font:500 10.5px/1 'DM Mono',ui-monospace,monospace;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)">metres away</div></div></div>
+      <button type="button" class=${'nw-way' + (s.onWay ? ' on' : '')} aria-pressed=${s.onWay ? 'true' : 'false'} onClick=${() => app.setState({ onWay:!s.onWay })}>${s.onWay ? html`${I('check', 18, 2.6)}Amina can see you’re coming` : 'I’m on my way'}</button></div></div>`;
+  return html`<div class="nw" style="background:#070A12"><div style="flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;text-align:center;padding:0 34px">
+      <div style="font:800 26px/1.15 'Manrope',system-ui,sans-serif;letter-spacing:-.025em;text-wrap:balance">Alert dismissed</div>
+      <div class="nw-m" style="font-size:14.5px">Amina’s Flare stays on your map for as long as it is active.</div></div>
+    <div class="nw-b"><button type="button" class="nw-open" style="background:var(--primary);color:#0B0F1A;min-height:58px;font-size:16px" onClick=${() => app.setState({ incoming:null })}>Open Clarion</button><button type="button" class="nw-dis" onClick=${() => app.setState({ incoming:'alert' })}>Replay the alert</button></div></div>`;
+}
+
+/* ---------- You page v3: photo, username search, ringtones, grouped settings ---------- */
+Object.assign(ICONS, {
+  play:'<path d="M8 5.5v13l10.5-6.5z"/>', stop:'<rect x="6.5" y="6.5" width="11" height="11" rx="2"/>',
+  camera:'<path d="M4 8.5h3.2L9 6h6l1.8 2.5H20V19H4z"/><circle cx="12" cy="13.2" r="3.4"/>',
+  music:'<path d="M9 18V6.5L20 4.5v11.5"/><circle cx="6.5" cy="18" r="2.5"/><circle cx="17.5" cy="16" r="2.5"/>',
+  at:'<circle cx="12" cy="12" r="3.8"/><path d="M15.8 12v1.4a2.6 2.6 0 0 0 5.2 0V12a9 9 0 1 0-3.6 7.2"/>',
+  phone:'<path d="M5.5 3.5h3.6l1.8 4.6-2.3 1.5a11 11 0 0 0 5.8 5.8l1.5-2.3 4.6 1.8v3.6a2 2 0 0 1-2 2A16.5 16.5 0 0 1 3.5 5.5a2 2 0 0 1 2-2z"/>',
+  timer:'<circle cx="12" cy="13.5" r="7.5"/><path d="M12 9.5v4l2.6 2M9.5 2.5h5"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2.5v2M12 19.5v2M2.5 12h2M19.5 12h2M5.3 5.3l1.4 1.4M17.3 17.3l1.4 1.4M5.3 18.7l1.4-1.4M17.3 6.7l1.4-1.4"/>',
+  search:'<circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/>'
+});
+
+/* Sample people a search can find (username, phone) */
+const DIR = [
+  { name:'Amina Bello', user:'amina.b', phone:'08031234567' }, { name:'Chidi Okafor', user:'chidi_ok', phone:'08059876543' },
+  { name:'Fatima Sani', user:'fatima.sani', phone:'07012345678' }, { name:'Tunde Adeyemi', user:'tunde.a', phone:'08122223333' },
+  { name:'Grace Eze', user:'grace.eze', phone:'09034445555' }, { name:'Ibrahim Yusuf', user:'ibro', phone:'08066667777' },
+  { name:'Zainab Musa', user:'zainab.m', phone:'07088889999' }
+];
+const TAKEN = DIR.map(p => p.user).concat(['clarion', 'admin', 'support']);
+const handleFrom = email => String(email).split('@')[0].toLowerCase().replace(/[^a-z0-9._]/g, '').slice(0, 20);
+function findPeople(raw){
+  const q = String(raw || '').trim().toLowerCase();
+  if (!q) return [];
+  if (/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(q)) { const u = handleFrom(q) || 'friend'; return [DIR.find(p => p.user === u) || { name:nameFrom(q), user:u }]; }
+  let d = q.replace(/[\s()+-]/g, '');
+  if (/^\d{4,}$/.test(d)) { if (d.startsWith('234')) d = '0' + d.slice(3); return DIR.filter(p => p.phone.includes(d)); }
+  const u = q.replace(/^@/, '').replace(/[^a-z0-9._]/g, '');
+  return u ? DIR.filter(p => p.user.includes(u)) : [];
+}
+
+/* Ringtones: sample synth sounds stand in for the real Clarion SOS tones */
+function morse(){ const a = []; let t = 0; '... --- ...'.split('').forEach(c => { if (c === ' ') { t += .2; return; } const d = c === '.' ? .1 : .3; a.push([880, t, d]); t += d + .1; }); return a; }
+function ringRing(){ const a = []; for (let r = 0; r < 2; r++) for (let i = 0; i < 12; i++) a.push([i % 2 ? 480 : 440, r * 1.1 + i * .06, .06]); return a; }
+const TONES = [
+  { id:'sos-siren', name:'SOS Siren', kind:'clarion', wave:'sawtooth', seq:[[650, 0, .55, 1250], [1250, .55, .55, 650], [650, 1.1, .55, 1250], [1250, 1.65, .55, 650]] },
+  { id:'sos-pulse', name:'SOS Pulse', kind:'clarion', wave:'square', seq:[[1000, 0, .12], [1000, .2, .12], [1000, .4, .12], [1000, 1, .12], [1000, 1.2, .12], [1000, 1.4, .12]] },
+  { id:'sos-beacon', name:'SOS Beacon', kind:'clarion', wave:'triangle', seq:[[740, 0, .32], [980, .35, .32], [740, .7, .32], [980, 1.05, .32], [740, 1.4, .32], [980, 1.75, .32]] },
+  { id:'sos-morse', name:'SOS Morse', kind:'clarion', wave:'sine', seq:morse() },
+  { id:'ph-default', name:'Phone default', kind:'phone', wave:'sine', seq:[[523, 0, .22], [659, .26, .22], [784, .52, .4], [523, 1.1, .22], [659, 1.36, .22], [784, 1.62, .4]] },
+  { id:'ph-bell', name:'Classic bell', kind:'phone', wave:'triangle', seq:[[1318, 0, .5], [1318, .6, .5], [1318, 1.2, .5]] },
+  { id:'ph-digital', name:'Digital alarm', kind:'phone', wave:'square', seq:[[2000, 0, .08], [2000, .14, .08], [2000, .5, .08], [2000, .64, .08], [2000, 1, .08], [2000, 1.14, .08]] },
+  { id:'ph-chimes', name:'Chimes', kind:'phone', wave:'sine', seq:[[1047, 0, .3], [1319, .3, .3], [1568, .6, .3], [2093, .9, .6]] },
+  { id:'ph-old', name:'Old phone', kind:'phone', wave:'square', seq:ringRing() }
+];
+const allTones = s => TONES.concat(s.custom);
+const toneName = s => (allTones(s).find(t => t.id === s.tone) || TONES[0]).name;
+let AC = null, stopCur = null;
+function stopSound(){ if (stopCur) { const f = stopCur; stopCur = null; f(); } }
+function playSound(t, done){
+  stopSound();
+  if (t.url) {
+    let a; try { a = new Audio(t.url); } catch (e) { return false; }
+    const tm = setTimeout(() => { stopSound(); done(); }, 5000);
+    stopCur = () => { clearTimeout(tm); try { a.pause(); } catch (e) {} };
+    a.play().catch(() => { stopSound(); done(true); });
+    return true;
+  }
+  try { AC = AC || new (window.AudioContext || window.webkitAudioContext)(); if (AC.state === 'suspended') AC.resume(); } catch (e) { return false; }
+  const g = AC.createGain(), o = AC.createOscillator(), now = AC.currentTime + .03, peak = (t.wave === 'square' || t.wave === 'sawtooth') ? .07 : .2;
+  o.type = t.wave; g.gain.setValueAtTime(.0001, now); o.connect(g); g.connect(AC.destination);
+  let end = 0;
+  t.seq.forEach(q => {
+    const st = now + q[1], d = q[2];
+    o.frequency.setValueAtTime(q[0], st); if (q[3]) o.frequency.linearRampToValueAtTime(q[3], st + d);
+    g.gain.setValueAtTime(.0001, st); g.gain.exponentialRampToValueAtTime(peak, st + Math.min(.02, d / 3)); g.gain.setValueAtTime(peak, st + d * .7); g.gain.exponentialRampToValueAtTime(.0001, st + d);
+    end = Math.max(end, q[1] + d);
+  });
+  o.start(now); o.stop(now + end + .05);
+  const tm = setTimeout(() => { stopCur = null; done(); }, (end + .15) * 1000);
+  stopCur = () => { clearTimeout(tm); try { g.gain.cancelScheduledValues(AC.currentTime); g.gain.setValueAtTime(.0001, AC.currentTime); o.stop(); } catch (e) {} };
+  return true;
+}
+
+/* ---------- You page pieces ---------- */
+const meStyle = s => s.photo ? 'background-image:url(' + s.photo + ')' : null;
+const Toggle = (s, app, k, t, d) => html`<div class="li"><div class="tx"><b>${t}</b><span>${d}</span></div><button type="button" role="switch" aria-checked=${s[k] ? 'true' : 'false'} aria-label=${t} class=${'tgl' + (s[k] ? ' on' : '')} onClick=${() => app.setState({ [k]:!s[k] })}></button></div>`;
+const SRow = (icon, label, value, onClick) => html`<button type="button" class="srow" onClick=${onClick}><span class="pi">${I(icon, 18)}</span><span class="lb">${label}</span><span class="vl">${value}</span>${I('chevR', 18, 2.2)}</button>`;
+const SubPage = (app, title, body) => html`<div class="view page"><div class="phd"><button type="button" class="rnd sm sf2" aria-label="Back to You" onClick=${() => app.sub(null)}>${I('back', 20, 2.2)}</button><h1 class="h2">${title}</h1></div><div class="pbody" key=${'sub-' + title}>${body}</div></div>`;
+function YouPage(s, app){
+  const p = s.youPage;
+  if (p === 'people') return SubPage(app, 'Who gets my Flare', People(s, app));
+  if (p === 'tone') return SubPage(app, 'Flare ringtone', TonePage(s, app));
+  if (p === 'quiet') return SubPage(app, 'Night quiet', QuietPage(s, app));
+  if (p === 'hold') return SubPage(app, 'Hold to send', HoldPage(s, app));
+  return html`<div class="view page"><div class="phd"><h1 class="h1">You</h1></div><div class="pbody" key="you-main">
+    <div class="ph">
+      <label class=${'photo' + (s.photo ? ' img' : '')} for="photo-in" style=${meStyle(s)} title="Change your photo">${s.photo ? null : ini(s.name)}<span class="cam">${I('camera', 16, 2.2)}</span></label>
+      <input id="photo-in" class="vh" type="file" accept="image/*" aria-label="Upload a profile photo" onChange=${e => app.pickPhoto(e)}/>
+      <div class="nm">${s.name || 'Your name'}</div>
+      <div class="un">${s.username ? '@' + s.username : 'No username yet'}</div>
+      <p class="sub sm">${s.username ? 'Friends can search @' + s.username + ' to add you.' : 'Pick a username so friends can find you.'}</p>
+      ${s.photo ? html`<button type="button" class="link" onClick=${() => app.setState({ photo:null })}>Remove photo</button>` : html`<label class="link" for="photo-in">Upload a photo</label>`}
+    </div>
+    <div class="grp"><h3>Account</h3><div class="list">
+      ${SRow('user', 'Name', s.name || 'Add', () => app.openEdit('name'))}
+      ${SRow('at', 'Username', s.username ? '@' + s.username : 'Add', () => app.openEdit('username'))}
+      ${SRow('phone', 'Phone number', s.phone || 'Add', () => app.openEdit('phone'))}
+      ${SRow('home', 'Lodge', s.lodge || 'Add', () => app.openEdit('lodge'))}
+    </div></div>
+    <div class="grp"><h3>Flare</h3><div class="list">
+      ${SRow('people', 'Who gets my Flare', s.mode === 'radius' ? 'Within ' + fmtKm(kmOf(s.t)) : 'Trusted circle · ' + s.trusted.length, () => app.sub('people'))}
+      ${SRow('timer', 'Hold to send', fmtS(s.holdSec), () => app.sub('hold'))}
+    </div></div>
+    <div class="grp"><h3>Alerts</h3><div class="list">
+      ${SRow('music', 'Flare ringtone', toneName(s), () => app.sub('tone'))}
+      ${SRow('moon', 'Night quiet', s.quiet ? 'From ' + s.quietFrom : 'Off', () => app.sub('quiet'))}
+    </div></div>
+    <div class="grp"><h3>Appearance</h3><div class="list"><div class="srow"><span class="pi">${I('sun', 18)}</span><span class="lb">Theme</span>
+      <div class="seg sm3"><button type="button" class=${s.dark ? '' : 'on'} onClick=${() => app.setState({ dark:false })}>Light</button><button type="button" class=${s.dark ? 'on' : ''} onClick=${() => app.setState({ dark:true })}>Dark</button></div></div></div></div>
+    <button type="button" class="btn gh" onClick=${() => app.signOut()}>Sign out</button>
+  </div></div>`;
+}
+function ToneRow(s, app, t, removable){
+  const on = s.tone === t.id, pl = s.playing === t.id;
+  return html`<div class="li trow">
+    <button type="button" class=${'tsel' + (on ? ' on' : '')} role="radio" aria-checked=${on ? 'true' : 'false'} onClick=${() => app.setState({ tone:t.id })}><i class="rd"></i><span class="tx"><b>${t.name}</b>${t.kind === 'custom' && html`<span>Your sound file</span>`}</span></button>
+    <button type="button" class=${'mini' + (pl ? ' pr' : '')} aria-label=${(pl ? 'Stop ' : 'Play ') + t.name} onClick=${() => app.play(t.id)}>${I(pl ? 'stop' : 'play', 14, 2.4)}${pl ? 'Stop' : 'Play'}</button>
+    ${removable && html`<button type="button" class="rnd sm" aria-label=${'Remove ' + t.name} onClick=${() => app.removeTone(t.id)}>${I('x', 16, 2.2)}</button>`}
+  </div>`;
+}
+function TonePage(s, app){
+  const phoneSel = TONES.find(t => t.id === s.tone && t.kind === 'phone' && t.id !== 'ph-default');
+  return html`<p class="sub sm">This sound plays when a Flare reaches you, and keeps ringing until you respond.</p>
+    <div class="sec"><h3>Clarion SOS tones</h3><div class="list" role="radiogroup" aria-label="Clarion SOS tones">${TONES.filter(t => t.kind === 'clarion').map(t => ToneRow(s, app, t))}</div>
+      <p class="demo">Sample sounds for this mockup. Your own Clarion SOS tones go here.</p></div>
+    <div class="sec"><h3>From your phone</h3><div class="list">${ToneRow(s, app, TONES[4])}${phoneSel && ToneRow(s, app, phoneSel)}</div>
+      <button type="button" class="btn gh" onClick=${() => app.setState({ phonePick:true })}>${I('phone', 18)}Choose from phone ringtones</button></div>
+    <div class="sec"><h3>Custom</h3>${s.custom.length ? html`<div class="list">${s.custom.map(t => ToneRow(s, app, t, true))}</div>` : html`<p class="empty">No custom ringtones yet.</p>`}
+      <label class="btn gh" for="tone-in">${I('plus', 18, 2.2)}Add a custom ringtone</label>
+      <input id="tone-in" class="vh" type="file" accept="audio/*" aria-label="Add a custom ringtone" onChange=${e => app.pickTone(e)}/>
+      <p class="sub sm">Pick any sound file on your phone, like an MP3 you recorded.</p></div>`;
+}
+function QuietPage(s, app){
+  return html`<div class="list">${Toggle(s, app, 'quiet', 'Mute my lodge after dark', 'Same-building alerts stay quiet at night')}${Toggle(s, app, 'circleRings', 'Trusted circle still rings', 'Flares from your trusted people always sound')}</div>
+    <div class="sec"><h3>Quiet from</h3><div class="seg">${['9 pm', '10 pm', '11 pm'].map(o => html`<button type="button" class=${s.quietFrom === o ? 'on' : ''} onClick=${() => app.setState({ quietFrom:o })}>${o}</button>`)}</div><p class="sub sm">Ends at 6 am.</p></div>
+    <div class="sec"><h3>Why this exists</h3><p class="sub sm">At night, people in your own building usually already know when something happens there. Muting stops your phone ringing for those, while Flares from further away and from your trusted circle still come through.</p></div>`;
+}
+function HoldPage(s, app){
+  return html`<p class="sub sm">How long you hold the Flare button before a Flare sends. A longer hold makes it harder to send one by mistake.</p>
+    <div class="seg">${[1, 1.3, 1.5, 2].map(v => html`<button type="button" class=${s.holdSec === v ? 'on' : ''} onClick=${() => app.setState({ holdSec:v })}>${fmtS(v)}</button>`)}</div>
+    ${HoldPill(s, app, 'test')}`;
+}
+function PhonePick(s, app){
+  const close = () => { app.stopPlay(); app.setState({ phonePick:false }); };
+  return html`<div class="modal" onClick=${e => { if (e.target === e.currentTarget) close(); }}><div class="msheet" role="dialog" aria-label="Phone ringtones">
+    <h2 class="h2">Phone ringtones</h2><p class="sub sm">In the real app this opens your phone’s own ringtone list.</p>
+    <div class="list" role="radiogroup" aria-label="Phone ringtones">${TONES.filter(t => t.kind === 'phone' && t.id !== 'ph-default').map(t => ToneRow(s, app, t))}</div>
+    <button type="button" class="btn" onClick=${close}>Done</button></div></div>`;
+}
+function AddModal(s, app){
+  const T = { trusted:'Add to trusted circle', excluded:'Exclude someone', share:'Share location with' }[s.add];
+  const have = s.add === 'share' ? s.sharedOut.map(x => x.name) : s[s.add];
+  const res = findPeople(s.addQ), verb = s.add === 'share' ? 'Share' : (s.add === 'excluded' ? 'Exclude' : 'Add');
+  const close = () => app.setState({ add:null });
+  return html`<div class="modal" onClick=${e => { if (e.target === e.currentTarget) close(); }}><form class="msheet" novalidate onSubmit=${e => { e.preventDefault(); if (res.length === 1 && !have.includes(res[0].name)) app.addPerson(res[0]); }}>
+    <h2 class="h2">${T}</h2><p class="sub sm">Search by username, phone number, or email. They need a Clarion account already.</p>
+    <div class="field"><label for="add-q">Username, phone or email</label><div class="inwrap"><span class="lead">${I('search', 18)}</span><input id="add-q" type="text" autocomplete="off" autocapitalize="off" placeholder="@username" value=${s.addQ} onInput=${e => app.setState({ addQ:e.target.value })}/></div></div>
+    ${s.addQ.trim()
+      ? (res.length ? html`<div class="list">${res.map(p => { const has = have.includes(p.name); return html`<div class="li"><span class="av sm">${ini(p.name)}</span><div class="tx"><b>${p.name}</b><span>@${p.user}</span></div><button type="button" class=${'mini ' + (has ? 'ok' : 'pr')} disabled=${has} onClick=${() => app.addPerson(p)}>${has ? 'Added' : verb}</button></div>`; })}</div>`
+        : html`<p class="empty">No one found. Check the spelling, or ask them to double-check their username.</p>`)
+      : html`<p class="demo">Try “fatima”, “ibro” or “0803”. In this mockup any email also works.</p>`}
+    <button type="button" class="link" onClick=${close}>Cancel</button></form></div>`;
+}
+const FIELDS = {
+  name:{ title:'Your name', label:'Name', ph:'Your full name', help:'Shown to people when you send a Flare.' },
+  username:{ title:'Your username', label:'Username', ph:'yourname', help:'Friends search this to add you. Use 3 to 20 letters, numbers, dots or underscores.' },
+  phone:{ title:'Phone number', label:'Phone number', ph:'0803 123 4567', mode:'tel', help:'Friends can also find you by phone number. It is only used for search.' },
+  lodge:{ title:'Lodge, building, or shop', label:'Lodge, building, or shop', ph:'e.g. Ridgeway Lodge, Block C', help:'Everyone who enters the same name shares your night-time close circle.' }
+};
+function EditModal(s, app){
+  const e = s.edit, F = FIELDS[e.key], close = () => app.setState({ edit:null });
+  return html`<div class="modal" onClick=${ev => { if (ev.target === ev.currentTarget) close(); }}><form class="msheet" novalidate onSubmit=${ev => { ev.preventDefault(); app.saveEdit(); }}>
+    <h2 class="h2">${F.title}</h2>
+    <div class="field"><label for="edit-in">${F.label}</label><div class=${'inwrap' + (e.key === 'username' ? ' at' : '')}><input id="edit-in" type="text" inputmode=${F.mode || 'text'} autocomplete="off" autocapitalize="off" placeholder=${F.ph} value=${e.value} onInput=${ev => app.setState({ edit:Object.assign({}, e, { value:ev.target.value, err:'' }) })}/></div></div>
+    ${e.err ? html`<div class="err" role="alert">${e.err}</div>` : html`<p class="sub sm">${F.help}</p>`}
+    <button class="btn" type="submit">Save</button><button type="button" class="link" onClick=${close}>Cancel</button></form></div>`;
+}
+
+/* ---------- version 2 pieces ---------- */
+ICONS.home = '<path d="M4 10.6 12 4l8 6.6V20h-5.6v-5.6H9.6V20H4z"/>';
+ICONS.minus = '<path d="M5 12h14"/>';
+const BAR = [['home', 'Home', 'home'], ['share', 'Share', 'share'], ['map', 'Map', 'map'], ['you', 'You', 'user']];
+const walk = km => Math.max(1, Math.round(km * 12)) + ' min walk';
+const clampZ = z => Math.max(.55, Math.min(3, z));
+const clampV = (v, a, b) => Math.max(a, Math.min(b, v));
+const leftOf = s => Math.max(0, s.holdSec * (1 - s.hp)).toFixed(1) + ' s';
+const MAP_CY = 360;
+
+function holdEv(app, kind){
+  return {
+    onPointerDown:e => { e.preventDefault(); app.holdStart(kind); }, onPointerUp:() => app.holdEnd(), onPointerLeave:() => app.holdEnd(), onPointerCancel:() => app.holdEnd(),
+    onContextMenu:e => e.preventDefault(),
+    onKeyDown:e => { if ((e.key === ' ' || e.key === 'Enter') && !e.repeat) { e.preventDefault(); app.holdStart(kind); } },
+    onKeyUp:e => { if (e.key === ' ' || e.key === 'Enter') app.holdEnd(); }
+  };
+}
+function HoldTag(s, kind, cls){
+  if (s.holding === kind) return html`<div class=${'htag ' + cls} role="status"><i></i>Keep holding · sending in ${leftOf(s)}</div>`;
+  if (s.hint && s.hintKind === kind) return html`<div class=${'htag off ' + cls} role="status">${s.hint}</div>`;
+  return null;
+}
+function HoldPill(s, app, kind){
+  const on = s.holding === kind, test = kind === 'test', sec = fmtS(s.holdSec);
+  return html`<div class=${'hwrap' + (on ? ' on' : '')}>
+    ${!test && HoldTag(s, kind, 'up')}
+    <i class="rip"></i><i class="rip r2"></i><i class="rip r3"></i>
+    <button type="button" class=${'hold' + (on ? ' on' : '') + (test ? ' test' : '')} aria-label=${test ? 'Test the hold, nothing is sent' : 'Hold for ' + sec + ' to send a Flare'} ...${holdEv(app, kind)}>
+      <i class="fill" style=${'transform:scaleX(' + (on ? s.hp : 0).toFixed(3) + ')'}></i>${I('flare', test ? 18 : 22, 2.2)}<span>${on ? 'Keep holding…' : (test ? 'Test the hold' : 'Hold to send a Flare')}</span><small>${on ? leftOf(s) : sec}</small></button>
+  </div>`;
+}
+function HoldRound(s, app){
+  const on = s.holding === 'msend', sec = fmtS(s.holdSec);
+  return html`<div class=${'hround' + (on ? ' on' : '')}>
+    ${HoldTag(s, 'msend', 'left')}
+    <i class="wave"></i><i class="wave w2"></i><i class="wave w3"></i>
+    <button type="button" class=${'holdc' + (on ? ' on' : '')} aria-label=${'Hold for ' + sec + ' to send a Flare'} ...${holdEv(app, 'msend')}>
+      <svg class="prog" viewBox="0 0 100 100" aria-hidden="true"><circle class="trk" cx="50" cy="50" r="47"/><circle class="pb" cx="50" cy="50" r="47" pathLength="100" style=${'stroke-dashoffset:' + (100 - 100 * (on ? s.hp : 0)).toFixed(2)}/></svg>
+      ${I('flare', 26, 2.3)}</button>
+  </div>`;
+}
+const Island = (s, app) => html`<div class="glass panel isl">${HoldPill(s, app, 'send')}${Reach(s, app, true)}${RadiusBar(s, app, 'h')}</div>`;
+const GreetIsland = (s, app) => html`<div class="glass gisl"><button type="button" class=${'av gav' + (s.photo ? ' img' : '')} style=${meStyle(s)} aria-label="Open your profile" onClick=${() => app.go('you')}>${s.photo ? null : ini(s.name)}</button>
+  <div class="gtx"><div class="g">${greeting()}, ${first(s.name)}</div><div class="quiet"><i></i>All quiet in your circle</div></div></div>`;
+function ShareMini(s, app){
+  const a = s.sharedIn; if (!a.length) return null;
+  const last = a[a.length - 1], more = a.length - 1;
+  const label = more ? first(last.name) + ' and ' + more + ' more are sharing location with you. Open Share' : first(last.name) + ' is sharing location with you. See on the map';
+  return html`<button type="button" class="glass smini" aria-label=${label} onClick=${() => more ? app.tab('share') : app.seeShared(last.name)}>
+    <span class="av xs live">${ini(last.name)}</span><span class="smt">${first(last.name)}${more ? ' +' + more : html` · <em>Live</em>`}</span><span class="see">See</span></button>`;
+}
+function HomeMap(s, app){
+  return html`<div class="view">${World(s, app, { w:390, cx:195, cy:340, avail:220 })}
+    <div class="maptop">${GreetIsland(s, app)}<div class="rowx">${FindBtn(s, app)}${ShareMini(s, app)}</div>${FitChips(s, app)}</div></div>`;
+}
+const mapFocus = s => s.focus && s.sharedIn.some(x => x.name === s.focus) ? s.focus : null;
+function MapTab(s, app){
+  const v = s.mv, f = mapFocus(s), fp = f && wpos(f);
+  const tx = 195 - v.cx * v.z, ty = MAP_CY - v.cy * v.z;
+  return html`<div class="view">
+    <div class="clip mclip" onPointerDown=${e => app.mDown(e)} onPointerMove=${e => app.mMove(e)} onPointerUp=${e => app.mUp(e)} onPointerCancel=${e => app.mUp(e)} onWheel=${e => app.mWheel(e)}>
+      <div class=${'world' + (s.drag ? ' drag' : '')} style=${'transform:translate(' + tx.toFixed(1) + 'px,' + ty.toFixed(1) + 'px) scale(' + v.z.toFixed(3) + ');--inv:' + (1 / v.z).toFixed(3)}>
+        <div class="art" dangerouslySetInnerHTML=${{ __html:MAP_SVG }}></div>
+        ${fp && html`<svg class="links route" viewBox="0 0 900 1300" width="900" height="1300" aria-hidden="true"><line x1=${YOU.x} y1=${YOU.y} x2=${fp.x.toFixed(1)} y2=${fp.y.toFixed(1)} style=${'stroke-width:' + (3.5 / v.z).toFixed(2) + ';stroke-dasharray:' + (2 / v.z).toFixed(2) + ' ' + (8 / v.z).toFixed(2)}/></svg>`}
+        ${fp && html`<span class="rlab" style=${'left:' + ((YOU.x + fp.x) / 2).toFixed(1) + 'px;top:' + ((YOU.y + fp.y) / 2).toFixed(1) + 'px'}>${fmtKm(person(f).km)} · ${walk(person(f).km)}</span>`}
+        <i class="you" style=${'left:' + YOU.x + 'px;top:' + YOU.y + 'px'}></i>
+        <span class="ylab" style=${'left:' + YOU.x + 'px;top:' + (YOU.y + 17 / v.z).toFixed(1) + 'px'}>You</span>
+        ${s.sharedIn.map(x => { const p = wpos(x.name);
+          return html`<button type="button" class=${'pin live' + (f === x.name ? ' sel' : '')} style=${'left:' + p.x.toFixed(1) + 'px;top:' + p.y.toFixed(1) + 'px'} aria-label=${'Show the way to ' + x.name} onClick=${() => app.focusOn(x.name)}><span class="pa">${ini(x.name)}</span><span class="pn">${first(x.name)} · LIVE</span></button>`; })}
+      </div></div>
+    <div class="maptop"><div class="chips">${s.sharedIn.length
+      ? s.sharedIn.map(x => html`<button type="button" class=${'pill glass' + (f === x.name ? ' on' : '')} onClick=${() => app.focusOn(x.name)}><span class="av xs live">${ini(x.name)}</span>${first(x.name)} · ${fmtKm(person(x.name).km)}</button>`)
+      : html`<span class="pill glass">Nobody is sharing with you right now</span>`}</div></div>
+    <div class="zoom">
+      <button type="button" class="glass rnd" aria-label="Zoom in" onClick=${() => app.zoomBy(1.4)}>${I('plus', 20, 2.2)}</button>
+      <button type="button" class="glass rnd" aria-label="Zoom out" onClick=${() => app.zoomBy(1 / 1.4)}>${I('minus', 20, 2.2)}</button>
+      <button type="button" class="glass rnd" aria-label="Back to me" onClick=${() => app.recenter()}>${I('target', 20)}</button>
+    </div></div>`;
+}
+function FriendCard(s, app, n){
+  const p = person(n), sh = s.sharedIn.find(x => x.name === n);
+  return html`<div class="glass pcard fcard"><span class="av live">${ini(n)}</span><div class="tx"><b>${n}</b><span class="lv">Live · ${fmtKm(p.km)} away · ${walk(p.km)}</span><span>Sharing for ${sh.left.replace(' left', ' more')}</span></div>
+    <button type="button" class="rnd sm" aria-label="Close" onClick=${() => app.setState({ focus:null })}>${I('x', 18, 2.2)}</button></div>`;
+}
+function MapRow(s, app){
+  const f = mapFocus(s);
+  return html`<div class="mrow"><span class="sp"></span>${HoldRound(s, app)}</div>${f && FriendCard(s, app, f)}`;
+}
+function TabBar(s, app){
+  const cur = s.sheet === 'share' ? 'share' : s.main;
+  return html`<nav class="glass panel tbar" aria-label="Main"><div class="bar">${BAR.map(b => html`<button type="button" class=${cur === b[0] ? 'on' : ''} aria-current=${cur === b[0] ? 'page' : null} onClick=${() => app.tab(b[0])}><span class="bi">${I(b[2], 21)}</span>${b[1]}</button>`)}</div></nav>`;
+}
+function Share(s, app){
+  return html`<div class="sec"><h3>Sharing with you</h3>${s.sharedIn.length
+      ? html`<div class="list">${s.sharedIn.map(x => html`<button type="button" class="li lirow" onClick=${() => app.seeShared(x.name)}><span class="av sm live">${ini(x.name)}</span><span class="tx"><b>${x.name}</b><span>Live · ${fmtKm(person(x.name).km)} away · ${x.left}</span></span><span class="go" aria-hidden="true">${I('target', 20)}</span></button>`)}</div><p class="sub sm">Tap someone to see the way from you to them on the map.</p>`
+      : html`<p class="empty">Nobody is sharing with you right now. Press “Friend shares location” beside the phone to see it happen.</p>`}</div>
+    <div class="sec"><h3>You’re sharing with</h3>${s.sharedOut.length ? html`<div class="list">${s.sharedOut.map(x => html`<div class="li"><span class="av sm">${ini(x.name)}</span><div class="tx"><b>${x.name}</b><span>Live · ${x.left}</span></div><button type="button" class="mini" onClick=${() => app.stopShare(x.name)}>Stop</button></div>`)}</div>` : html`<p class="empty">Not sharing with anyone right now</p>`}</div>
+    <div class="sec"><h3>Share for</h3><div class="seg">${['1 hour', '2 hours', 'Until I stop'].map(o => html`<button type="button" class=${s.shareFor === o ? 'on' : ''} onClick=${() => app.setState({ shareFor:o })}>${o}</button>`)}</div>
+      <button type="button" class="btn" onClick=${() => app.openAdd('share')}>${I('share', 18)}Share with someone new</button></div>
+    <p class="sub sm">Separate from Flare alerts. Sharing here never rings anyone.</p>`;
+}
+function Sheet(s, app){
+  const close = () => app.setState({ sheet:null });
+  return html`<div class="scrim" onClick=${close}></div>
+    <div class="sheet pop" role="dialog" aria-label="Share my location"><div class="sheet-h"><h2 class="h2">Share my location</h2><button type="button" class="rnd sm sf2" aria-label="Close" onClick=${close}>${I('x', 18, 2.2)}</button></div><div class="sheet-b">${Share(s, app)}</div></div>`;
+}
+/* ---------- the app ---------- */
+class App extends Component {
+  constructor(p){ super(p); this.state = this.fresh(true); }
+  fresh(signedIn){
+    const base = { phase:'auth', signUp:true, email:'', pass:'', aErr:'', name:'', lodge:'', loc:false, notif:false, onb:false,
+      main:'home', youPage:null, sheet:null, add:null, addEmail:'', addErr:'', mode:'radius', t:.49, chip:false,
+      trusted:['Amina Bello', 'Chidi Okafor', 'Fatima Sani'], excluded:['Tunde Adeyemi'],
+      sharedIn:[{ name:'Fatima Sani', left:'1 h 42 min left' }], sharedOut:[{ name:'Fatima Sani', left:'1 h 42 min left' }], shareFor:'2 hours',
+      quiet:true, quietFrom:'9 pm', circleRings:true, holdSec:1.5, holding:false, hp:0, hint:'', hintKind:'', flash:false, flare:null, elapsed:0, fit:false, sel:null,
+      mv:{ cx:YOU.x, cy:YOU.y, z:1.2 }, focus:null, drag:false,
+      username:'', phone:'', photo:null, tone:'sos-siren', custom:[], playing:null, edit:null, phonePick:false, addQ:'',
+      dark:this.props.mock.dark, incoming:null, onWay:false, banner:null, toast:'' };
+    return signedIn ? Object.assign(base, { phase:'app', name:'Zerubbabel', username:'zerubbabel', lodge:'Ridgeway Lodge', loc:true, notif:true, onb:true }) : base;
+  }
+  clearAll(){ stopSound(); ['_h', '_t1', '_hint', '_toast', '_ban', '_fl', '_wz'].forEach(k => clearTimeout(this[k])); clearInterval(this._tick); clearInterval(this._hiv); this._hk = null; this._ptr = null; }
+  componentWillUnmount(){ this.clearAll(); }
+  restart(){ this.clearAll(); this.setState(this.fresh(false)); }
+  say(t){ clearTimeout(this._toast); this.setState({ toast:t }); this._toast = setTimeout(() => this.setState({ toast:'' }), 2800); }
+  signIn(){
+    const s = this.state;
+    if (!s.email.trim() || !s.pass) { this.setState({ aErr:'Type any email and any password to continue.' }); return; }
+    if (s.signUp && !s.onb) { this.setState({ phase:'ob1', aErr:'' }); return; }
+    this.setState({ phase:'app', main:'home', aErr:'', name:s.name.trim() || nameFrom(s.email), username:s.username || handleFrom(s.email), lodge:s.lodge.trim() || 'Ridgeway Lodge', loc:s.onb ? s.loc : true, notif:s.onb ? s.notif : true, onb:true });
+  }
+  ob1(){ const s = this.state; this.setState({ phase:'ob2', name:s.name.trim() || nameFrom(s.email), username:s.username || handleFrom(s.email), lodge:s.lodge.trim() || 'Ridgeway Lodge' }); }
+  finish(){ this.setState({ phase:'app', onb:true, main:'home', sheet:null }); if (!this.state.loc) this.say('Location is off. You will be asked when you send a Flare.'); }
+  signOut(){ this.clearAll(); this.setState({ phase:'auth', signUp:false, pass:'', sheet:null, main:'home', youPage:null, sel:null, fit:false, chip:false, flare:null, holding:false, hp:0, hint:'', hintKind:'', flash:false, focus:null }); }
+  go(main){ this.stopPlay(); this.setState({ main, sheet:null, chip:false, sel:null, fit:false, youPage:null }); }
+  sub(k){ this.stopPlay(); this.setState({ youPage:k }); }
+  stopPlay(){ stopSound(); if (this.state.playing) this.setState({ playing:null }); }
+  play(id){
+    if (this.state.playing === id) { this.stopPlay(); return; }
+    const t = allTones(this.state).find(x => x.id === id); if (!t) return;
+    const ok = playSound(t, failed => { this.setState({ playing:null }); if (failed === true) this.say('This file can’t play in the mockup, but it is saved as your ringtone.'); });
+    this.setState({ playing:ok ? id : null });
+  }
+  pickPhoto(e){
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (!/^image\//.test(f.type)) { this.say('Pick a photo, like a JPG or PNG.'); return; }
+    const r = new FileReader();
+    r.onload = () => {
+      const img = new Image();
+      img.onload = () => {
+        const S = 256, c = document.createElement('canvas'); c.width = c.height = S;
+        const k = Math.max(S / img.width, S / img.height), w = img.width * k, hh = img.height * k;
+        c.getContext('2d').drawImage(img, (S - w) / 2, (S - hh) / 2, w, hh);
+        let url; try { url = c.toDataURL('image/jpeg', .85); } catch (er) { url = r.result; }
+        this.setState({ photo:url }); this.say('Photo updated');
+      };
+      img.onerror = () => this.say('That photo could not be opened. Try another one.');
+      img.src = r.result;
+    };
+    r.readAsDataURL(f);
+  }
+  pickTone(e){
+    const f = e.target.files && e.target.files[0]; e.target.value = '';
+    if (!f) return;
+    if (!/^audio\//.test(f.type) && !/\.(mp3|m4a|wav|ogg|aac|flac)$/i.test(f.name)) { this.say('Pick a sound file, like an MP3.'); return; }
+    let url = ''; try { url = URL.createObjectURL(f); } catch (er) {}
+    const t = { id:'c' + Date.now(), name:f.name.replace(/\.[^.]+$/, '').slice(0, 40) || 'My ringtone', kind:'custom', url };
+    this.setState({ custom:this.state.custom.concat(t), tone:t.id }); this.say('Added “' + t.name + '” as your Flare ringtone');
+  }
+  removeTone(id){
+    const s = this.state; if (s.playing === id) stopSound();
+    this.setState({ custom:s.custom.filter(t => t.id !== id), tone:s.tone === id ? 'sos-siren' : s.tone, playing:s.playing === id ? null : s.playing });
+  }
+  openEdit(key){ const s = this.state; this.setState({ edit:{ key, value:s[key] || '', err:'' } }); }
+  saveEdit(){
+    const s = this.state, e = s.edit, v = e.value.trim(), fail = err => this.setState({ edit:Object.assign({}, e, { err }) });
+    if (e.key === 'name') { if (!v) return fail('Type your name.'); this.setState({ name:v, edit:null }); this.say('Name saved'); return; }
+    if (e.key === 'username') {
+      const u = v.replace(/^@/, '').toLowerCase();
+      if (!/^[a-z0-9._]{3,20}$/.test(u)) return fail('Use 3 to 20 letters, numbers, dots or underscores. No spaces.');
+      if (u !== s.username && TAKEN.includes(u)) return fail('That username is already taken');
+      this.setState({ username:u, edit:null }); this.say('Saved. Friends can now find you as @' + u); return;
+    }
+    if (e.key === 'phone') {
+      if (v && v.replace(/\D/g, '').length < 10) return fail('Type a full phone number, like 0803 123 4567.');
+      this.setState({ phone:v, edit:null }); this.say(v ? 'Phone number saved' : 'Phone number removed'); return;
+    }
+    this.setState({ lodge:v, edit:null }); this.say('Lodge saved');
+  }
+  tab(k){ if (k === 'share') this.setState({ sheet:this.state.sheet === 'share' ? null : 'share', chip:false }); else this.go(k); }
+  openPeople(){ this.setState({ main:'you', youPage:'people', sheet:null, chip:false, sel:null, fit:false }); }
+  setMode(mode){ this.setState({ mode, chip:false }); }
+
+  holdStart(kind){
+    if (this._hk) return;
+    this._hk = kind; clearTimeout(this._h); clearTimeout(this._hint); clearInterval(this._hiv);
+    const ms = this.state.holdSec * 1000, t0 = Date.now();
+    this.setState({ holding:kind, hp:0, hint:'', hintKind:'', chip:false });
+    this._hiv = setInterval(() => this.setState({ hp:Math.min(1, (Date.now() - t0) / ms) }), 50);
+    this._h = setTimeout(() => {
+      clearInterval(this._hiv); this._hk = null; this.setState({ holding:false, hp:0 });
+      if (kind === 'test') this.say('That is the full hold. Nothing was sent.'); else this.fire();
+    }, ms);
+  }
+  holdEnd(){
+    const was = this._hk; if (!was) return;
+    this._hk = null; clearTimeout(this._h); clearInterval(this._hiv);
+    if (was === 'test') { this.setState({ holding:false, hp:0 }); this.say('Let go too early. Hold for the full ' + fmtS(this.state.holdSec) + '.'); return; }
+    this.setState({ holding:false, hp:0, hint:'Let go early. Nothing was sent.', hintKind:was });
+    clearTimeout(this._hint); this._hint = setTimeout(() => this.setState({ hint:'', hintKind:'' }), 2600);
+  }
+  fire(){ clearTimeout(this._fl); this.setState({ flash:true }); this._fl = setTimeout(() => { this.setState({ flash:false }); this.sendFlare(); }, 320); }
+  sendFlare(){
+    clearTimeout(this._t1); clearInterval(this._tick);
+    if (!this.state.loc) { this.setState({ flare:'noperm', sheet:null }); return; }
+    this.setState({ flare:'locating', sheet:null, hint:'' });
+    this._t1 = setTimeout(() => { this.setState({ flare:'out', elapsed:0 }); this._tick = setInterval(() => this.setState({ elapsed:this.state.elapsed + 1 }), 1000); }, 1300);
+  }
+  safe(){ clearInterval(this._tick); this.setState({ flare:'cancelled' }); }
+  grantLoc(){ this.setState({ loc:true, flare:null }); this.say('Location allowed. Hold the button to send a Flare.'); }
+  toggleFit(){
+    const s = this.state;
+    if (!s.fit && !s.trusted.length) { this.say('Your trusted circle is empty. Add people in You, under Who gets my Flare.'); return; }
+    this.setState({ fit:!s.fit, sel:null });
+    if (!s.fit) this.say('Showing your ' + s.trusted.length + ' trusted ' + (s.trusted.length === 1 ? 'person' : 'people'));
+  }
+  select(n){ this.setState({ sel:this.state.sel === n ? null : n }); }
+
+  /* Map tab: tap a friend, drag, pinch, wheel, + / − */
+  focusOn(n){
+    const p = wpos(n), dx = Math.abs(p.x - YOU.x), dy = Math.abs(p.y - YOU.y);
+    const z = clampZ(Math.min(1.6, 230 / Math.max(40, dx), 300 / Math.max(40, dy)));
+    this.setState({ focus:n, mv:{ cx:(p.x + YOU.x) / 2, cy:(p.y + YOU.y) / 2, z }, drag:false, sheet:null });
+  }
+  seeShared(n){ this.setState({ main:'map', sheet:null, banner:null, chip:false, sel:null, fit:false, youPage:null }); this.focusOn(n); }
+  recenter(){ this.setState({ mv:{ cx:YOU.x, cy:YOU.y, z:1.2 }, focus:null, drag:false }); }
+  zoomBy(f, quick){
+    const v = this.state.mv; this.setState({ mv:{ cx:v.cx, cy:v.cy, z:clampZ(v.z * f) }, drag:!!quick });
+    if (quick) { clearTimeout(this._wz); this._wz = setTimeout(() => this.setState({ drag:false }), 140); }
+  }
+  mDown(e){
+    if (e.button > 0) return;
+    const P = this._ptr || (this._ptr = new Map());
+    P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    this._sc = (e.currentTarget.getBoundingClientRect().width / 390) || 1;
+    if (P.size === 1) { this._moved = false; this._start = { x:e.clientX, y:e.clientY, v:Object.assign({}, this.state.mv) }; }
+    if (P.size === 2) { const q = Array.from(P.values()); this._pinch = { d:Math.hypot(q[0].x - q[1].x, q[0].y - q[1].y) || 1, z:this.state.mv.z }; }
+  }
+  mMove(e){
+    const P = this._ptr; if (!P || !P.has(e.pointerId)) return;
+    P.set(e.pointerId, { x:e.clientX, y:e.clientY });
+    if (P.size >= 2 && this._pinch) {
+      const q = Array.from(P.values()), d = Math.hypot(q[0].x - q[1].x, q[0].y - q[1].y);
+      this._moved = true; this.setState({ drag:true, mv:Object.assign({}, this.state.mv, { z:clampZ(this._pinch.z * d / this._pinch.d) }) });
+      return;
+    }
+    const st = this._start; if (!st) return;
+    const dx = (e.clientX - st.x) / this._sc, dy = (e.clientY - st.y) / this._sc;
+    if (!this._moved && Math.hypot(dx, dy) < 6) return;
+    if (!this._moved) { this._moved = true; try { e.currentTarget.setPointerCapture(e.pointerId); } catch (er) {} }
+    this.setState({ drag:true, mv:{ cx:clampV(st.v.cx - dx / st.v.z, 40, 860), cy:clampV(st.v.cy - dy / st.v.z, 40, 1260), z:st.v.z } });
+  }
+  mUp(e){
+    const P = this._ptr; if (!P) return;
+    P.delete(e.pointerId);
+    if (P.size < 2) this._pinch = null;
+    if (P.size === 1) { const r = Array.from(P.values())[0]; this._start = { x:r.x, y:r.y, v:Object.assign({}, this.state.mv) }; }
+    if (!P.size) { this._start = null; if (this.state.drag) this.setState({ drag:false }); }
+  }
+  mWheel(e){ e.preventDefault(); this.zoomBy(e.deltaY < 0 ? 1.15 : 1 / 1.15, true); }
+
+  remove(list, n){ const s = this.state; this.setState({ [list]:s[list].filter(x => x !== n), sel:s.sel === n ? null : s.sel }); this.say(n + ' removed'); }
+  stopShare(n){ this.setState({ sharedOut:this.state.sharedOut.filter(x => x.name !== n) }); this.say('Stopped sharing with ' + first(n)); }
+  openAdd(kind){ this.setState({ add:kind, addQ:'' }); }
+  addPerson(p){
+    const s = this.state, n = p.name;
+    if (s.add === 'share') {
+      if (s.sharedOut.some(x => x.name === n)) return;
+      const left = s.shareFor === '1 hour' ? '59 min left' : (s.shareFor === '2 hours' ? '1 h 59 min left' : 'until you stop');
+      this.setState({ sharedOut:s.sharedOut.concat({ name:n, left }), add:null }); this.say('Sharing your location with ' + first(n));
+    } else {
+      if (s[s.add].includes(n)) return;
+      this.setState({ [s.add]:s[s.add].concat(n), add:null }); this.say(first(n) + (s.add === 'trusted' ? ' added to your trusted circle' : ' will not get your Flares'));
+    }
+  }
+  incomingFlare(){ this.setState({ incoming:'alert', onWay:false, banner:null }); }
+  friendShares(){
+    const s = this.state, cand = ['Chidi Okafor', 'Amina Bello'].find(n => !s.sharedIn.some(x => x.name === n)), name = cand || 'Chidi Okafor';
+    this.setState({ sharedIn:cand ? s.sharedIn.concat({ name, left:'59 min left' }) : s.sharedIn, banner:{ name, again:!cand } });
+    clearTimeout(this._ban); this._ban = setTimeout(() => this.setState({ banner:null }), 9000);
+  }
+  viewBanner(){
+    const b = this.state.banner; if (!b) return;
+    if (this.state.phase === 'app') this.seeShared(b.name); else { this.setState({ banner:null }); this.say('Sign in first, then you can see ' + first(b.name) + ' on the map.'); }
+  }
+  render(){
+    const s = this.state, m = this.props.mock, app = this;
+    let body;
+    if (s.phase === 'auth') body = Auth(s, app, m);
+    else if (s.phase === 'ob1') body = Ob1(s, app, m);
+    else if (s.phase === 'ob2') body = Ob2(s, app);
+    else {
+      const screen = s.main === 'map' ? MapTab(s, app) : s.main === 'you' ? YouPage(s, app) : HomeMap(s, app);
+      const above = s.sheet ? null : s.main === 'home' ? html`${s.sel && PersonCard(s, app)}${Island(s, app)}` : s.main === 'map' ? MapRow(s, app) : null;
+      body = html`${screen}${s.sheet && Sheet(s, app)}<div class="dock">${above}${TabBar(s, app)}</div>${s.add && AddModal(s, app)}${s.edit && EditModal(s, app)}${s.phonePick && PhonePick(s, app)}`;
+    }
+    return html`<div class=${'app ' + m.skin + (s.dark !== m.dark ? ' alt' : '')}>
+      ${body}
+      ${s.flash && html`<div class="flash"></div>`}
+      ${s.flare && FlareOver(s, app)}
+      ${s.incoming && Incoming(s, app)}
+      ${s.banner && html`<div class="banner" role="status"><span class="av sm live">${ini(s.banner.name)}</span><div class="tx"><b>${s.banner.name}</b><span>${s.banner.again ? 'is still sharing location with you' : 'started sharing location with you'}</span></div><button type="button" class="see" onClick=${() => app.viewBanner()}>View</button><button type="button" class="rnd sm" aria-label="Close" onClick=${() => app.setState({ banner:null })}>${I('x', 16, 2.2)}</button></div>`}
+      ${s.toast && html`<div class="toast" role="status">${s.toast}</div>`}
+    </div>`;
+  }
+}
+
+/* ---------- page around the phone ---------- */
+const $ = id => document.getElementById(id);
+let appRef = null;
+render(html`<${App} mock=${MOCK} ref=${r => { if (r) appRef = r; }} />`, $('mount'));
+function fit(){
+  const box = $('pbox'), narrow = window.innerWidth <= 880;
+  const top = box.getBoundingClientRect().top + window.scrollY;
+  const availH = window.innerHeight - top - 16, availW = narrow ? window.innerWidth - 32 : 430;
+  const pw = $('phone').offsetWidth || 414, ph = $('phone').offsetHeight || 868;
+  const sc = Math.max(narrow ? .5 : .62, Math.min(1, availW / pw, availH / ph));
+  $('phone').style.transform = 'scale(' + sc + ')'; box.style.width = (pw * sc) + 'px'; box.style.height = (ph * sc) + 'px';
+}
+$('act-flare').addEventListener('click', () => appRef && appRef.incomingFlare());
+$('act-share').addEventListener('click', () => appRef && appRef.friendShares());
+$('act-restart').addEventListener('click', () => appRef && appRef.restart());
+window.addEventListener('resize', fit);
+fit();
+window.__clarion = { App, html, render, get app(){ return appRef; } };
+})();
+</script>
