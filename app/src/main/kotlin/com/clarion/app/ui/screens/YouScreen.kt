@@ -154,7 +154,7 @@ fun YouScreen(
             Modifier.fillMaxSize().statusBarsPadding().verticalScroll(rememberScrollState()).padding(horizontal = 20.dp).navigationBarsPadding().padding(top = 24.dp, bottom = dockBottom + 30.dp),
             verticalArrangement = Arrangement.spacedBy(22.dp),
         ) {
-            T("You", 28.sp, t.ink, FontWeight.ExtraBold)
+            T("Profile", 28.sp, t.ink, FontWeight.ExtraBold)
             val p = profile
             Column(Modifier.fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                 Box(Modifier.size(92.dp).clickable { pickImage.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {

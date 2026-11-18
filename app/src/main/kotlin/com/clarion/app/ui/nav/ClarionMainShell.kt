@@ -165,7 +165,7 @@ private fun TabBar(current: String, modifier: Modifier = Modifier, onSelect: (St
         modifier.fillMaxWidth().glass(RoundedCornerShape(30.dp)).padding(horizontal = 12.dp, vertical = 10.dp),
         horizontalArrangement = Arrangement.spacedBy(6.dp),
     ) {
-        listOf(Triple("home", "Home", "home"), Triple("share", "Share", "share"), Triple("map", "Map", "map"), Triple("you", "You", "user")).forEach { (key, label, icon) ->
+        listOf(Triple("home", "Home", "home"), Triple("share", "Share", "share"), Triple("map", "Map", "map"), Triple("you", "Profile", "user")).forEach { (key, label, icon) ->
             val on = current == key
             Column(
                 Modifier.weight(1f).clickable(remember { MutableInteractionSource() }, null) { onSelect(key) },

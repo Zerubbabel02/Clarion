@@ -426,7 +426,7 @@ fun Toast(text: String?, modifier: Modifier = Modifier) {
 fun RadiusBar(km: Float, onChange: (Float) -> Unit, onDone: () -> Unit) {
     val t = tk()
     Column {
-        BoxWithConstraints(Modifier.fillMaxWidth().height(40.dp).padding(horizontal = 13.dp)) {
+        BoxWithConstraints(Modifier.fillMaxWidth().height(26.dp).padding(horizontal = 10.dp)) {
             val w = constraints.maxWidth.toFloat()
             val frac = kmToT(km)
             Box(
@@ -434,18 +434,18 @@ fun RadiusBar(km: Float, onChange: (Float) -> Unit, onDone: () -> Unit) {
                     .pointerInput(w) { detectTapGestures { o -> onChange(tToKm((o.x / w).coerceIn(0f, 1f))); onDone() } }
                     .pointerInput(w) { detectHorizontalDragGestures(onDragEnd = onDone) { ch, _ -> onChange(tToKm((ch.position.x / w).coerceIn(0f, 1f))) } }
                     .drawBehind {
-                        val y = size.height / 2; val h = 6.dp.toPx(); val ext = 13.dp.toPx()
+                        val y = size.height / 2; val h = 4.dp.toPx(); val ext = 10.dp.toPx()
                         drawRoundRect(t.line, Offset(-ext, y - h / 2), Size(size.width + 2 * ext, h), CornerRadius(h / 2))
                         drawRoundRect(t.ink, Offset(-ext, y - h / 2), Size(size.width * frac + ext, h), CornerRadius(h / 2))
                         val cx = size.width * frac
-                        drawCircle(Color.Black.copy(alpha = 0.25f), 14.dp.toPx(), Offset(cx, y + 1.dp.toPx()))
-                        drawCircle(t.bg, 13.dp.toPx(), Offset(cx, y))
-                        drawCircle(t.ink, 10.dp.toPx(), Offset(cx, y))
+                        drawCircle(Color.Black.copy(alpha = 0.25f), 10.5.dp.toPx(), Offset(cx, y + 1.dp.toPx()))
+                        drawCircle(t.bg, 9.5.dp.toPx(), Offset(cx, y))
+                        drawCircle(t.ink, 7.dp.toPx(), Offset(cx, y))
                     },
             )
         }
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            T("300 m", 12.sp, t.muted); T("5 km", 12.sp, t.muted)
+            T("300 m", 11.sp, t.muted); T("5 km", 11.sp, t.muted)
         }
     }
 }
@@ -456,18 +456,18 @@ fun RadiusBar(km: Float, onChange: (Float) -> Unit, onDone: () -> Unit) {
 fun ReachChip(trusted: Boolean, km: Float, trustedCount: Int?, onMode: (Boolean) -> Unit, onChooseCircle: () -> Unit) {
     val t = tk()
     var open by remember { mutableStateOf(false) }
-    val chipH = with(LocalDensity.current) { 52.dp.toPx() }.toInt()
+    val chipH = with(LocalDensity.current) { 42.dp.toPx() }.toInt()
     Box {
         Row(
-            Modifier.heightIn(min = 44.dp).clip(RoundedCornerShape(50)).background(t.surface).border(1.dp, t.line, RoundedCornerShape(50))
-                .clickable { open = !open }.padding(horizontal = 14.dp),
+            Modifier.heightIn(min = 34.dp).clip(RoundedCornerShape(50)).background(t.surface).border(1.dp, t.line, RoundedCornerShape(50))
+                .clickable { open = !open }.padding(horizontal = 12.dp),
             verticalAlignment = Alignment.CenterVertically,
         ) {
-            CIcon(if (trusted) "people" else "pin", 18.dp, t.primary)
-            Spacer(Modifier.width(8.dp))
-            T(if (trusted) "Reaches your trusted circle" + (trustedCount?.let { " · $it" } ?: "") else "Reaches everyone within ${formatKm(km.toDouble())}", 13.5.sp, t.ink, FontWeight.SemiBold, maxLines = 1)
-            Spacer(Modifier.width(8.dp))
-            CIcon("chev", 16.dp, t.muted, 2.2f)
+            CIcon(if (trusted) "people" else "pin", 15.dp, t.primary)
+            Spacer(Modifier.width(6.dp))
+            T(if (trusted) "Reaches your trusted circle" + (trustedCount?.let { " · $it" } ?: "") else "Reaches everyone within ${formatKm(km.toDouble())}", 12.5.sp, t.ink, FontWeight.SemiBold, maxLines = 1)
+            Spacer(Modifier.width(6.dp))
+            CIcon("chev", 14.dp, t.muted, 2.2f)
         }
         if (open) {
             Popup(alignment = Alignment.BottomCenter, offset = IntOffset(0, -chipH), onDismissRequest = { open = false }, properties = PopupProperties(focusable = true)) {
@@ -641,7 +641,7 @@ fun HoldRound(holdSeconds: Float, onComplete: () -> Unit) {
 /** Glass panel with a column layout, used for the Flare island and cards. */
 @Composable
 fun GlassColumn(modifier: Modifier = Modifier, radius: Dp = 30.dp, content: @Composable () -> Unit) {
-    Column(modifier.fillMaxWidth().glass(RoundedCornerShape(radius)).padding(start = 14.dp, end = 14.dp, top = 14.dp, bottom = 12.dp), verticalArrangement = Arrangement.spacedBy(10.dp), horizontalAlignment = Alignment.CenterHorizontally) { content() }
+    Column(modifier.fillMaxWidth().glass(RoundedCornerShape(radius)).padding(start = 12.dp, end = 12.dp, top = 12.dp, bottom = 8.dp), verticalArrangement = Arrangement.spacedBy(8.dp), horizontalAlignment = Alignment.CenterHorizontally) { content() }
 }
 
 @Suppress("unused")
