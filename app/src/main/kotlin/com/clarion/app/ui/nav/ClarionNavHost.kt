@@ -23,6 +23,9 @@ import com.clarion.app.core.NotificationHelper
 import com.clarion.app.core.ThemeMode
 import com.clarion.app.core.supabase
 import io.github.jan.supabase.auth.auth
+import io.github.jan.supabase.auth.status.SessionStatus
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.first
 import com.clarion.app.ui.screens.AuthScreen
 import com.clarion.app.ui.screens.FlareMapScreen
 import com.clarion.app.ui.screens.NightModeScreen
@@ -60,14 +63,38 @@ fun ClarionNavHost(
     NavHost(navController = navController, startDestination = ClarionDestinations.SPLASH) {
         composable(ClarionDestinations.SPLASH) {
             LaunchedEffect(Unit) {
-                // The real logout bug: session restore from disk happens asynchronously, and
-                // on a cold start currentUserOrNull() was being checked before that finished —
-                // so a perfectly valid saved session looked like "no session" every single
-                // time the app process was killed and restarted. awaitInitialization() blocks
-                // until the disk-restore attempt (success or failure) actually completes.
-                supabase.auth.awaitInitialization()
-                val hasSession = ClarionRepository.currentUserId() != null
-                val target = if (!hasSession) ClarionDestinations.AUTH else routeAfterAuth()
+                // The real logout bug, round 2: awaitInitialization() only guarantees the
+                // disk-restore step finished — it does NOT wait for the follow-up network
+                // refresh Auth performs when the restored access token has already expired,
+                // which it always has after the app's been closed more than an hour (the
+                // default token lifetime). Checking currentUserOrNull() right after
+                // awaitInitialization() raced that refresh: it could still read the stale,
+                // expired-looking session and route to the sign-in screen even though a
+                // valid refresh was about to succeed a moment later (confirmed live via
+                // Supabase's own Auth logs — a token refresh completing successfully within
+                // a second of the app showing "Create your account"). sessionStatus is the
+                // real signal: it only leaves Initializing once Auth has settled into
+                // Authenticated, NotAuthenticated, or RefreshFailure — i.e. restore AND any
+                // needed refresh have both actually finished.
+                // A real, confirmed crash: routeAfterAuth() hitting Postgrest to check for a
+                // profile can throw HttpRequestTimeoutException on this app's actual target
+                // network conditions (rural, intermittent), and this runs on every single
+                // cold start — an uncaught exception here crashed the whole app ("suddenly
+                // closes, drops to home screen"), not just this screen. One retry after a
+                // short pause handles a transient blip; a second failure falls back to AUTH
+                // rather than crash — worst case is a real re-login, never a crash.
+                val target = try {
+                    val status = supabase.auth.sessionStatus.first { it !is SessionStatus.Initializing }
+                    if (status !is SessionStatus.Authenticated) ClarionDestinations.AUTH else routeAfterAuth()
+                } catch (e: Exception) {
+                    try {
+                        delay(2000)
+                        val status = supabase.auth.sessionStatus.first { it !is SessionStatus.Initializing }
+                        if (status !is SessionStatus.Authenticated) ClarionDestinations.AUTH else routeAfterAuth()
+                    } catch (e2: Exception) {
+                        ClarionDestinations.AUTH
+                    }
+                }
                 navController.navigate(target) {
                     popUpTo(ClarionDestinations.SPLASH) { inclusive = true }
                 }
@@ -114,6 +141,7 @@ fun ClarionNavHost(
                 onThemeModeChange = onThemeModeChange,
                 onSendFlare = { navController.navigate(ClarionDestinations.SEND_FLARE) },
                 onShareLocation = { navController.navigate(ClarionDestinations.SHARE_LOCATION) },
+                onFlareTrustedCircle = { navController.navigate(ClarionDestinations.SEND_FLARE_TRUSTED) },
                 onOpenNightMode = { navController.navigate(ClarionDestinations.NIGHT_MODE) },
                 onSignedOut = {
                     navController.navigate(ClarionDestinations.AUTH) {
@@ -126,6 +154,9 @@ fun ClarionNavHost(
 
         composable(ClarionDestinations.SEND_FLARE) {
             SendFlareScreen(onCancelFlare = { navController.popBackStack() })
+        }
+        composable(ClarionDestinations.SEND_FLARE_TRUSTED) {
+            SendFlareScreen(onCancelFlare = { navController.popBackStack() }, trustedOnly = true)
         }
         composable(ClarionDestinations.NIGHT_MODE) {
             NightModeScreen(onBack = { navController.popBackStack() })

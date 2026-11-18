@@ -54,7 +54,10 @@ import org.maplibre.android.maps.MapView
 
 // Fallback only if a real GPS fix can't be obtained (permission denied, no signal indoors, etc).
 private val FALLBACK_LOCATION = LatLng(10.3158, 9.8442) // Bauchi, Nigeria
-private const val STYLE_URL = "https://tiles.openfreemap.org/styles/liberty"
+// MapTiler's "streets" style — richer road/building/POI detail than OpenFreeMap's liberty
+// style (already the richest OpenFreeMap offers). Free tier confirmed: 100k map loads/month,
+// no card on file required, service pauses rather than billing on overage.
+private const val STYLE_URL = "https://api.maptiler.com/maps/streets-v4/style.json?key=528ExeDeaAf9kydS89ek"
 private val Flare = Color(0xFFE8562E)
 private val FlareGlow = Color(0xFFF08B5A)
 

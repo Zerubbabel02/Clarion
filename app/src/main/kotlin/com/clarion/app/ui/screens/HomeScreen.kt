@@ -28,24 +28,54 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.clarion.app.core.ClarionRepository
+import com.clarion.app.core.ProfileCache
+import com.clarion.app.ui.theme.Amber
 import com.clarion.app.ui.theme.Flare
 import com.clarion.app.ui.theme.FlareGlow
 import com.clarion.app.ui.theme.Safe
+import com.clarion.app.ui.theme.Terracotta
+
+private fun timeOfDayGreeting(): String {
+    // java.time works natively at minSdk 26, no desugaring needed. LocalTime.now() reads the
+    // device's current timezone, so this is correct wherever the phone travels — no need to
+    // capture a timezone at registration and have it go stale.
+    return when (java.time.LocalTime.now().hour) {
+        in 5..11 -> "Good morning"
+        in 12..16 -> "Good afternoon"
+        in 17..20 -> "Good evening"
+        else -> "Good night"
+    }
+}
 
 @Composable
 fun HomeScreen(
     onSendFlare: () -> Unit = {},
     onShareLocation: () -> Unit = {},
+    onFlareTrustedCircle: () -> Unit = {},
 ) {
-    var displayName by remember { mutableStateOf<String?>(null) }
+    val context = LocalContext.current
+    // Seeded from the local cache so the greeting shows the real name on the very first
+    // frame — no flash of the name-less greeting while the network fetch below is in flight.
+    var displayName by remember { mutableStateOf(ProfileCache.getDisplayName(context)) }
+    val greeting = remember { timeOfDayGreeting() }
 
     LaunchedEffect(Unit) {
-        displayName = ClarionRepository.getMyProfile()?.displayName
+        try {
+            val fresh = ClarionRepository.getMyProfile()?.displayName
+            if (fresh != null) {
+                displayName = fresh
+                ProfileCache.setDisplayName(context, fresh)
+            }
+        } catch (_: Exception) {
+            // A network hiccup here just means the cached/last-known name stays on screen —
+            // it must never crash the app (a real, confirmed crash on this exact pattern).
+        }
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -62,7 +92,7 @@ fun HomeScreen(
             Spacer(modifier = Modifier.height(18.dp))
 
             Text(
-                text = if (displayName != null) "Good evening, $displayName" else "Good evening",
+                text = if (displayName != null) "$greeting, $displayName" else greeting,
                 fontSize = 22.sp,
                 fontWeight = FontWeight.SemiBold,
                 color = MaterialTheme.colorScheme.onBackground,
@@ -118,8 +148,16 @@ fun HomeScreen(
                 QuickAccessCard(
                     title = "Share Location",
                     subtitle = "With loved ones, any time",
+                    accentColor = Amber,
                     modifier = Modifier.weight(1f),
                     onClick = onShareLocation,
+                )
+                QuickAccessCard(
+                    title = "Alert Circle",
+                    subtitle = "Just your trusted contacts",
+                    accentColor = Terracotta,
+                    modifier = Modifier.weight(1f),
+                    onClick = onFlareTrustedCircle,
                 )
             }
         }
@@ -130,16 +168,25 @@ fun HomeScreen(
 private fun QuickAccessCard(
     title: String,
     subtitle: String,
+    accentColor: Color? = null,
     modifier: Modifier = Modifier,
     onClick: () -> Unit,
 ) {
     Column(
         modifier = modifier
-            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
+            .background(
+                accentColor?.copy(alpha = 0.14f) ?: MaterialTheme.colorScheme.surface,
+                RoundedCornerShape(18.dp),
+            )
             .clickable { onClick() }
             .padding(16.dp),
     ) {
-        Text(title, fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+        Text(
+            title,
+            fontSize = 14.sp,
+            fontWeight = FontWeight.SemiBold,
+            color = accentColor ?: MaterialTheme.colorScheme.onBackground,
+        )
         Spacer(modifier = Modifier.height(4.dp))
         Text(subtitle, fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
     }

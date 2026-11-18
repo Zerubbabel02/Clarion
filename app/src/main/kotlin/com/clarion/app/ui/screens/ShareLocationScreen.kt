@@ -49,7 +49,11 @@ fun ShareLocationScreen(onBack: () -> Unit) {
     var loading by remember { mutableStateOf(true) }
 
     suspend fun refresh() {
-        sharedWith = ClarionRepository.listActiveShares()
+        try {
+            sharedWith = ClarionRepository.listActiveShares()
+        } catch (_: Exception) {
+            // A network hiccup must never crash the app.
+        }
         loading = false
     }
 
@@ -140,22 +144,19 @@ fun ShareLocationScreen(onBack: () -> Unit) {
                     .padding(bottom = 24.dp),
                 contentAlignment = Alignment.Center,
             ) {
-                Text("Share With Someone New", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.5.sp)
+                Text("Share With Someone", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 14.5.sp)
             }
         }
     }
 
     if (showAddDialog) {
-        AddByEmailDialog(
+        AddContactDialog(
             title = "Share your location",
             onDismiss = { showAddDialog = false },
-            onConfirm = { email ->
+            onConfirm = { found ->
                 scope.launch {
-                    val found = ClarionRepository.findProfileByEmail(email)
-                    if (found != null) {
-                        ClarionRepository.shareLocationWith(found.id, if (selectedHours == -1) null else selectedHours)
-                        refresh()
-                    }
+                    ClarionRepository.shareLocationWith(found.id, if (selectedHours == -1) null else selectedHours)
+                    refresh()
                     showAddDialog = false
                 }
             },

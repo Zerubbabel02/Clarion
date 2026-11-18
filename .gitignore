@@ -11,3 +11,10 @@ captures/
 .cxx/
 *.apk
 *.aab
+app/google-services.json
+*serviceAccount*.json
+firebase-service-account*.json
+.secrets.env
+
+# Supabase CLI local state
+supabase/.temp/

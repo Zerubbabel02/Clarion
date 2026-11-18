@@ -5,6 +5,12 @@ plugins {
     id("org.jetbrains.kotlin.plugin.serialization")
 }
 
+// Applied only once google-services.json is in place, so a fresh checkout without it still
+// configures and builds — real push wiring is opt-in until that file exists.
+if (file("google-services.json").exists()) {
+    apply(plugin = "com.google.gms.google-services")
+}
+
 android {
     namespace = "com.clarion.app"
     compileSdk = 36
@@ -55,6 +61,10 @@ dependencies {
     implementation("androidx.compose.ui:ui")
     implementation("androidx.compose.ui:ui-graphics")
     implementation("androidx.compose.material3:material3")
+    // The small core icon set (a few hundred KB), NOT material-icons-extended (35MB, which
+    // repeatedly failed to download on this project's unstable connection and was dropped
+    // entirely) — Edit is one of the ~80 icons the core set actually includes.
+    implementation("androidx.compose.material:material-icons-core")
     implementation("androidx.compose.ui:ui-tooling-preview")
     implementation("androidx.navigation:navigation-compose:2.8.3")
     implementation("org.maplibre.gl:android-sdk:11.11.0")
@@ -75,4 +85,21 @@ dependencies {
     // Android for exactly this reason. Hit this crash live on-device before switching.
     implementation("io.ktor:ktor-client-okhttp:3.5.0")
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.7.3")
+
+    // Real background delivery: a Flare must ring even when the app is fully closed, which
+    // the old foreground-only poll (kept below as a redundant fast-path while the app is
+    // open) can't do. KTX artifacts were merged into the main modules and dropped from the
+    // BOM as of Firebase BOM 34 — use firebase-messaging directly, not firebase-messaging-ktx.
+    implementation(platform("com.google.firebase:firebase-bom:34.16.0"))
+    implementation("com.google.firebase:firebase-messaging")
+
+    // Sign in with Google, via Credential Manager (the current Android-recommended API,
+    // not the deprecated GoogleSignInClient) exchanging a Google ID token for a real Supabase
+    // session (auth-kt's signInWith(IDToken)). credentials-play-services-auth is the backport
+    // that makes this work below Android 14, where Credential Manager has no native OS
+    // provider yet — this app's real target users skew toward older/cheaper devices than even
+    // the Tecno CN5 this was tested on, so it isn't optional here.
+    implementation("androidx.credentials:credentials:1.5.0")
+    implementation("androidx.credentials:credentials-play-services-auth:1.5.0")
+    implementation("com.google.android.libraries.identity.googleid:googleid:1.2.0")
 }

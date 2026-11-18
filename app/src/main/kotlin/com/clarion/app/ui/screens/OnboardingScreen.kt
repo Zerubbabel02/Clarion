@@ -129,7 +129,7 @@ fun OnboardingScreen(onDone: () -> Unit, onSignOut: () -> Unit = {}) {
             } else {
                 Text("Two permissions we need", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
                 Spacer(modifier = Modifier.height(10.dp))
-                Text("Nothing works without these — here's exactly why.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
+                Text("Nothing works without these. Here's exactly why.", fontSize = 14.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f))
                 Spacer(modifier = Modifier.height(24.dp))
                 PermissionCard(
                     title = "Location",

@@ -7,12 +7,16 @@ import android.os.Build
 import android.os.Bundle
 import android.view.WindowManager
 import androidx.activity.ComponentActivity
+import androidx.activity.OnBackPressedCallback
 import androidx.activity.compose.setContent
 import androidx.core.app.NotificationManagerCompat
+import androidx.lifecycle.lifecycleScope
+import com.clarion.app.core.FlareCancelSignal
 import com.clarion.app.core.NotificationHelper
 import com.clarion.app.ui.nav.ClarionDestinations
 import com.clarion.app.ui.screens.IncomingFlareScreen
 import com.clarion.app.ui.theme.ClarionTheme
+import kotlinx.coroutines.launch
 
 /**
  * The full-screen-intent target Android launches over the lock screen when a Flare alert fires.
@@ -21,6 +25,7 @@ import com.clarion.app.ui.theme.ClarionTheme
  */
 class FlareAlertActivity : ComponentActivity() {
     companion object {
+        const val EXTRA_FLARE_ID = "extra_flare_id"
         const val EXTRA_SENDER = "extra_sender"
         const val EXTRA_DISTANCE = "extra_distance"
         const val EXTRA_LOCATION = "extra_location"
@@ -47,6 +52,31 @@ class FlareAlertActivity : ComponentActivity() {
         }
         window.addFlags(WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON)
 
+        val flareId = intent.getStringExtra(EXTRA_FLARE_ID)
+        // If the sender cancels while this exact flare is on screen (phone already unlocked,
+        // actively ringing), close this screen too, not just silence the notification.
+        lifecycleScope.launch {
+            FlareCancelSignal.flow.collect { cancelledId ->
+                if (flareId != null && cancelledId == flareId) finish()
+            }
+        }
+
+        // Leaving via system back must stop the ring just like Dismiss — otherwise the
+        // notification stays active in the tray, still INSISTENT, with nothing left on screen
+        // to stop it short of the 5-minute timeout (which isn't reliable in the background on
+        // this OEM — see NotificationHelper.cancelStaleRing).
+        onBackPressedDispatcher.addCallback(
+            this,
+            object : OnBackPressedCallback(true) {
+                override fun handleOnBackPressed() {
+                    NotificationManagerCompat.from(this@FlareAlertActivity).cancel(NotificationHelper.NOTIFICATION_ID)
+                    NotificationHelper.cancelAutoDismiss(this@FlareAlertActivity)
+                    NotificationHelper.clearRingState(this@FlareAlertActivity)
+                    finish()
+                }
+            },
+        )
+
         val sender = intent.getStringExtra(EXTRA_SENDER) ?: "A neighbor"
         val distance = intent.getStringExtra(EXTRA_DISTANCE) ?: ""
         val location = intent.getStringExtra(EXTRA_LOCATION) ?: ""
@@ -66,6 +96,8 @@ class FlareAlertActivity : ComponentActivity() {
                         // it should keep going while they're asleep/haven't noticed, not the
                         // instant the screen draws.
                         NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
+                        NotificationHelper.cancelAutoDismiss(this)
+                        NotificationHelper.clearRingState(this)
                         val openMapIntent = Intent(this, MainActivity::class.java).apply {
                             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
                             putExtra(MainActivity.EXTRA_NAVIGATE_TO, ClarionDestinations.FLARE_MAP)
@@ -80,6 +112,8 @@ class FlareAlertActivity : ComponentActivity() {
                     },
                     onDismiss = {
                         NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
+                        NotificationHelper.cancelAutoDismiss(this)
+                        NotificationHelper.clearRingState(this)
                         finish()
                     },
                 )

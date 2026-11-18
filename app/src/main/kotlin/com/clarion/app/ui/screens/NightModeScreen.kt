@@ -51,7 +51,12 @@ fun NightModeScreen(onBack: () -> Unit) {
     val scope = rememberCoroutineScope()
 
     LaunchedEffect(Unit) {
-        ClarionRepository.getMyProfile()?.let { enabled = it.nightMuteEnabled }
+        try {
+            ClarionRepository.getMyProfile()?.let { enabled = it.nightMuteEnabled }
+        } catch (_: Exception) {
+            // A network hiccup must never crash the app — the switch just stays on its
+            // default until the user toggles it (which writes fresh regardless).
+        }
     }
 
     Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
@@ -66,9 +71,9 @@ fun NightModeScreen(onBack: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.Center,
             ) {
-                LegendDot(color = MaterialTheme.colorScheme.primaryContainer, label = "Your building — muted")
+                LegendDot(color = MaterialTheme.colorScheme.primaryContainer, label = "Your building: muted")
                 Spacer(modifier = Modifier.width(20.dp))
-                LegendDot(color = Flare, label = "Everyone else — full alert")
+                LegendDot(color = Flare, label = "Everyone else: full alert")
             }
 
             Spacer(modifier = Modifier.height(18.dp))
@@ -110,8 +115,8 @@ fun NightModeScreen(onBack: () -> Unit) {
                 )
                 Spacer(modifier = Modifier.height(8.dp))
                 Text(
-                    "During quiet hours (9pm–6am), a Flare from inside your own lodge won't ring your " +
-                        "lodge-mates' phones out loud — a room full of ringing phones can tip off an intruder " +
+                    "During quiet hours (9pm to 6am), a Flare from inside your own lodge won't ring your " +
+                        "lodge-mates' phones out loud, since a room full of ringing phones can tip off an intruder " +
                         "to more people, or more targets. People outside your building still get the full alert " +
                         "immediately. You can always open Clarion yourself to check the map.",
                     fontSize = 12.5.sp,

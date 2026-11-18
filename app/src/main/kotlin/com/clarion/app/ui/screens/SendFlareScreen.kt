@@ -54,7 +54,7 @@ private sealed interface SendState {
 }
 
 @Composable
-fun SendFlareScreen(onCancelFlare: () -> Unit) {
+fun SendFlareScreen(onCancelFlare: () -> Unit, trustedOnly: Boolean = false) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     var state by remember { mutableStateOf<SendState>(SendState.Sending) }
@@ -74,12 +74,24 @@ fun SendFlareScreen(onCancelFlare: () -> Unit) {
 
         try {
             @Suppress("MissingPermission")
-            val location = LocationHelper.getCurrentLocation(context)
+            val location = LocationHelper.getFastestLocation(context)
             if (location == null) {
                 state = SendState.Error("Couldn't get a location fix. Move somewhere with clearer sky and try again.")
                 return@LaunchedEffect
             }
-            val flareId = ClarionRepository.sendFlare(location.lat, location.lng, locationLabel = null)
+            // Real lodge name from onboarding, not a hardcoded null — mapping accuracy here
+            // is poor, so knowing the physical building matters as much as the map pin.
+            val lodgeName = try {
+                ClarionRepository.getMyLodgeName()
+            } catch (_: Exception) {
+                null
+            }
+            val flareId = ClarionRepository.sendFlare(
+                location.lat,
+                location.lng,
+                locationLabel = lodgeName,
+                targetMode = if (trustedOnly) "trusted" else "radius",
+            )
             state = SendState.Sent(flareId)
         } catch (e: Exception) {
             state = SendState.Error(e.message ?: "Couldn't send your Flare. Try again.")
@@ -98,7 +110,12 @@ fun SendFlareScreen(onCancelFlare: () -> Unit) {
     Surface(modifier = Modifier.fillMaxSize(), color = Night) {
         Column(modifier = Modifier.fillMaxSize().padding(horizontal = 28.dp)) {
             Spacer(modifier = Modifier.height(58.dp))
-            Text("DISCREET MODE", color = NightTextSoft, fontSize = 12.sp, letterSpacing = 0.6.sp)
+            Text(
+                if (trustedOnly) "ALERTING YOUR CIRCLE" else "DISCREET MODE",
+                color = NightTextSoft,
+                fontSize = 12.sp,
+                letterSpacing = 0.6.sp,
+            )
 
             Column(
                 modifier = Modifier.weight(1f).fillMaxWidth(),
@@ -115,7 +132,7 @@ fun SendFlareScreen(onCancelFlare: () -> Unit) {
                         Text("Location permission needed", color = Color.White, fontWeight = FontWeight.Bold, fontSize = 20.sp, textAlign = TextAlign.Center)
                         Spacer(modifier = Modifier.height(10.dp))
                         Text(
-                            "Clarion can't send a Flare without your location — grant it in Settings, then come back.",
+                            "Clarion can't send a Flare without your location. Grant it in Settings, then come back.",
                             color = NightTextSoft,
                             fontSize = 13.5.sp,
                             textAlign = TextAlign.Center,
@@ -151,7 +168,11 @@ fun SendFlareScreen(onCancelFlare: () -> Unit) {
                                 .padding(16.dp),
                         ) {
                             Text(
-                                "Your phone stays silent — only you can cancel this",
+                                if (trustedOnly) {
+                                    "Only your trusted circle is alerted, regardless of distance. Your phone stays silent; only you can cancel this."
+                                } else {
+                                    "Your phone stays silent. Only you can cancel this."
+                                },
                                 color = NightTextSoft,
                                 fontSize = 13.sp,
                             )
@@ -185,7 +206,7 @@ fun SendFlareScreen(onCancelFlare: () -> Unit) {
                     if (cancelling) {
                         CircularProgressIndicator(modifier = Modifier.size(16.dp), color = Safe, strokeWidth = 2.dp)
                     } else {
-                        Text("I'm Safe — Cancel Flare", color = Safe, fontWeight = FontWeight.Bold, fontSize = 15.sp)
+                        Text("I'm Safe, Cancel Flare", color = Safe, fontWeight = FontWeight.Bold, fontSize = 15.sp)
                     }
                 }
             } else {

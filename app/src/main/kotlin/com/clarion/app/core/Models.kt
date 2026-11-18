@@ -13,6 +13,7 @@ data class Circle(
 data class Profile(
     val id: String,
     @SerialName("display_name") val displayName: String,
+    val username: String? = null,
     @SerialName("phone_number") val phoneNumber: String? = null,
     @SerialName("circle_id") val circleId: String? = null,
     val lat: Double? = null,
@@ -21,6 +22,7 @@ data class Profile(
     @SerialName("broadcast_mode") val broadcastMode: String = "radius",
     @SerialName("radius_km") val radiusKm: Double = 1.2,
     @SerialName("night_mute_enabled") val nightMuteEnabled: Boolean = true,
+    @SerialName("fcm_token") val fcmToken: String? = null,
 )
 
 @Serializable
@@ -31,6 +33,7 @@ data class Flare(
     val lng: Double,
     @SerialName("location_label") val locationLabel: String? = null,
     val status: String = "active",
+    @SerialName("target_mode") val targetMode: String = "radius",
 )
 
 @Serializable

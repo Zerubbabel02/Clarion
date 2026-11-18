@@ -114,18 +114,50 @@ fun IncomingFlareScreen(
                 text = "$senderName sent a Flare",
                 color = Color.White,
                 fontWeight = FontWeight.Bold,
-                fontSize = 24.sp,
+                fontSize = 22.sp,
                 textAlign = TextAlign.Center,
             )
-            Spacer(modifier = Modifier.height(8.dp))
+            Spacer(modifier = Modifier.height(6.dp))
             Text(
-                text = "$distance away · $location",
+                text = "$distance away",
                 color = NightTextSoft,
-                fontSize = 14.sp,
+                fontSize = 13.sp,
                 textAlign = TextAlign.Center,
             )
 
-            Spacer(modifier = Modifier.height(48.dp))
+            // The single most important thing on this whole screen: map accuracy in this
+            // app's real target area is poor, so knowing the physical building by name — not
+            // the pin on a map — is how a responder actually gets there. Deliberately bigger
+            // and bolder than the sender's own name above it, not an afterthought subtitle.
+            val hasRealLocation = location.isNotBlank() && location != "Nearby"
+            if (hasRealLocation) {
+                Spacer(modifier = Modifier.height(22.dp))
+                Column(
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    modifier = Modifier
+                        .background(Flare.copy(alpha = 0.16f), RoundedCornerShape(20.dp))
+                        .padding(horizontal = 22.dp, vertical = 18.dp),
+                ) {
+                    Text(
+                        text = "COMING FROM",
+                        color = FlareGlow,
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 12.sp,
+                        letterSpacing = 1.4.sp,
+                    )
+                    Spacer(modifier = Modifier.height(6.dp))
+                    Text(
+                        text = location,
+                        color = Color.White,
+                        fontWeight = FontWeight.ExtraBold,
+                        fontSize = 30.sp,
+                        lineHeight = 34.sp,
+                        textAlign = TextAlign.Center,
+                    )
+                }
+            }
+
+            Spacer(modifier = Modifier.height(if (hasRealLocation) 36.dp else 48.dp))
             Box(
                 modifier = Modifier
                     .background(Flare, shape = RoundedCornerShape(16.dp))

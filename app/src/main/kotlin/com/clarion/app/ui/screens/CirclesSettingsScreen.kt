@@ -17,6 +17,7 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
@@ -42,7 +43,7 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 @Composable
-fun CirclesSettingsScreen(onOpenNightMode: () -> Unit) {
+fun CirclesSettingsScreen() {
     val scope = rememberCoroutineScope()
 
     var radiusKm by remember { mutableFloatStateOf(1.2f) }
@@ -53,13 +54,18 @@ fun CirclesSettingsScreen(onOpenNightMode: () -> Unit) {
     var dialog by remember { mutableStateOf<AddTarget?>(null) }
 
     suspend fun refresh() {
-        val profile = ClarionRepository.getMyProfile()
-        if (profile != null) {
-            radiusKm = profile.radiusKm.toFloat()
-            isRadiusMode = profile.broadcastMode != "circle"
+        try {
+            val profile = ClarionRepository.getMyProfile()
+            if (profile != null) {
+                radiusKm = profile.radiusKm.toFloat()
+                isRadiusMode = profile.broadcastMode != "circle"
+            }
+            trustedMembers = ClarionRepository.listTrustedMembers()
+            excludedMembers = ClarionRepository.listExcluded()
+        } catch (_: Exception) {
+            // A network hiccup must never crash the app — falls through to `loaded = true`
+            // below with whatever defaults were already set, rather than spin forever.
         }
-        trustedMembers = ClarionRepository.listTrustedMembers()
-        excludedMembers = ClarionRepository.listExcluded()
         loaded = true
     }
 
@@ -82,6 +88,17 @@ fun CirclesSettingsScreen(onOpenNightMode: () -> Unit) {
             Spacer(modifier = Modifier.height(58.dp))
             Text("Circles & Settings", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(18.dp))
+
+            // Not rendered until the real broadcast mode has loaded — showing a hardcoded
+            // "By Radius" guess first and then flipping to whatever's actually saved (often
+            // "Trusted Circle") was a real, visible bug: the toggle appeared to change itself
+            // on its own a moment after the screen opened.
+            if (!loaded) {
+                Box(modifier = Modifier.fillMaxWidth().padding(vertical = 40.dp), contentAlignment = Alignment.Center) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary, strokeWidth = 2.dp)
+                }
+                return@Column
+            }
 
             Row(
                 modifier = Modifier
@@ -170,39 +187,18 @@ fun CirclesSettingsScreen(onOpenNightMode: () -> Unit) {
                 AddRow(label = "Add someone to exclude", onClick = { dialog = AddTarget.EXCLUDED })
             }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
-                    .clickable { onOpenNightMode() }
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Night circle muting", fontSize = 13.5.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-                    Text("Same-building alerts stay quiet after 9pm", fontSize = 11.5.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
-                }
-                Text("→", fontSize = 16.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.4f))
-            }
-
             Spacer(modifier = Modifier.height(90.dp))
         }
     }
 
     dialog?.let { target ->
-        AddByEmailDialog(
+        AddContactDialog(
             title = if (target == AddTarget.TRUSTED) "Add to trusted circle" else "Add to exclude list",
             onDismiss = { dialog = null },
-            onConfirm = { email ->
+            onConfirm = { found ->
                 scope.launch {
-                    val found = ClarionRepository.findProfileByEmail(email)
-                    if (found != null) {
-                        if (target == AddTarget.TRUSTED) ClarionRepository.addTrustedMember(found.id) else ClarionRepository.addExcluded(found.id)
-                        refresh()
-                    }
+                    if (target == AddTarget.TRUSTED) ClarionRepository.addTrustedMember(found.id) else ClarionRepository.addExcluded(found.id)
+                    refresh()
                     dialog = null
                 }
             },

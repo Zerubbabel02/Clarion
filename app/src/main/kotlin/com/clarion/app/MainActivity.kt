@@ -37,10 +37,29 @@ class MainActivity : ComponentActivity() {
     private val themeMode = mutableStateOf(ThemeMode.SYSTEM)
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
+        // Deliberately discarding savedInstanceState, not passing it through: Navigation-
+        // Compose restores its backstack across process death by default, and this is a
+        // safety app — SendFlareScreen auto-sends a real Flare the instant it composes
+        // (that's the intended UX: navigating there IS the send-confirmation). If the OS
+        // kills this process while that screen is on top (routine on a budget device) and
+        // the user later reopens the app, restoring the backstack recomposes straight back
+        // into SendFlareScreen and fires a brand new real Flare with zero user action — this
+        // was the "opening the app randomly sends a Flare" bug, confirmed by tracing exactly
+        // how that screen triggers a send. super.onCreate(null) forces every fresh process
+        // to start clean from Splash's real auth check instead of resuming mid-flow.
+        super.onCreate(null)
         enableEdgeToEdge()
 
         NotificationHelper.ensureChannel(this)
+        // Belt-and-suspenders against a real, confirmed bug: the 5-minute auto-dismiss alarm
+        // depends on AlarmManager waking a background receiver, which OEM power management can
+        // (and on this device, does) simply kill — leaving a stale, still-active "call"-style
+        // Flare notification stuck in the tray long past its 5 minutes. Reopening the app then
+        // has this OEM's own shell re-surface that stale notification as a heads-up and replay
+        // its ring, which looks exactly like a brand new phantom Flare. Checking here means the
+        // app itself clears it out the moment it's genuinely overdue, instead of trusting an
+        // alarm that may never fire.
+        NotificationHelper.cancelStaleRing(this)
         requestNotificationPermissionIfNeeded()
 
         pendingNav.value = pendingNavFrom(intent)
@@ -65,6 +84,14 @@ class MainActivity : ComponentActivity() {
                 )
             }
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        // Catches the case where the process survived in the background (so onCreate doesn't
+        // run again) and the user simply switched back to the app — the exact "leave and
+        // reenter" repro for the stale-notification bug above.
+        NotificationHelper.cancelStaleRing(this)
     }
 
     override fun onNewIntent(intent: Intent) {

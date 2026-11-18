@@ -44,16 +44,23 @@ fun ClarionMainShell(
     onThemeModeChange: (ThemeMode) -> Unit,
     onSendFlare: () -> Unit,
     onShareLocation: () -> Unit,
+    onFlareTrustedCircle: () -> Unit,
     onOpenNightMode: () -> Unit,
     onSignedOut: () -> Unit,
 ) {
     var selected by remember { mutableIntStateOf(0) }
     val context = LocalContext.current
 
-    // The real (not demo) receiving path: while the app is open, poll for other users'
-    // active Flares within their own broadcast radius of my last-known location, and ring
-    // the exact same alert a push notification would trigger. Needs the app alive — true
-    // "even if closed" delivery is still pending Firebase, deferred earlier in this project.
+    // Save/refresh this device's FCM token every real login — the send-flare-push Edge
+    // Function delivers to it directly, including when this app is fully closed.
+    LaunchedEffect(Unit) {
+        ClarionRepository.fetchAndSaveFcmToken()
+    }
+
+    // A redundant foreground fast-path, kept alongside real push: while the app is open,
+    // also poll directly so an alert can never be missed to a delivery hiccup on the push
+    // side. NOTIFICATION_ID is shared with the push path, so a duplicate here just replaces
+    // the same notification rather than stacking a second one.
     LaunchedEffect(Unit) {
         val alreadyAlerted = mutableSetOf<String>()
         while (true) {
@@ -73,6 +80,7 @@ fun ClarionMainShell(
                                 val distanceLabel = if (distanceM < 950) "${distanceM.toInt()}m" else "${"%.1f".format(distanceM / 1000)}km"
                                 NotificationHelper.postFlareAlert(
                                     context = context,
+                                    flareId = id,
                                     senderName = sender.displayName,
                                     distance = distanceLabel,
                                     location = flare.locationLabel ?: "Nearby",
@@ -116,10 +124,19 @@ fun ClarionMainShell(
     ) { padding ->
         Box(modifier = Modifier.padding(bottom = padding.calculateBottomPadding())) {
             when (selected) {
-                0 -> HomeScreen(onSendFlare = onSendFlare, onShareLocation = onShareLocation)
+                0 -> HomeScreen(
+                    onSendFlare = onSendFlare,
+                    onShareLocation = onShareLocation,
+                    onFlareTrustedCircle = onFlareTrustedCircle,
+                )
                 1 -> FlareMapScreen(targetLat = null, targetLng = null, targetSenderName = null, onBack = { selected = 0 })
-                2 -> CirclesSettingsScreen(onOpenNightMode = onOpenNightMode)
-                3 -> ProfileScreen(themeMode = themeMode, onThemeModeChange = onThemeModeChange, onSignedOut = onSignedOut)
+                2 -> CirclesSettingsScreen()
+                3 -> ProfileScreen(
+                    themeMode = themeMode,
+                    onThemeModeChange = onThemeModeChange,
+                    onOpenNightMode = onOpenNightMode,
+                    onSignedOut = onSignedOut,
+                )
             }
         }
     }
