@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
             val mode = themeMode.value
             val systemDark = isSystemInDarkTheme()
             val isDark = when (mode) {
-                ThemeMode.SYSTEM -> systemDark
+                ThemeMode.SYSTEM -> true // Night Map is dark unless Light is picked in You
                 ThemeMode.LIGHT -> false
                 ThemeMode.DARK -> true
             }

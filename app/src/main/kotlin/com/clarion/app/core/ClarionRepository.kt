@@ -188,7 +188,13 @@ object ClarionRepository {
     suspend fun nearbyActiveFlares(myLat: Double, myLng: Double): List<Pair<Flare, Profile>> {
         val uid = currentUserId() ?: return emptyList()
         val activeFlares = supabase.from("flares")
-            .select { filter { eq("status", "active"); eq("target_mode", "radius"); neq("sender_id", uid) } }
+            .select {
+                filter {
+                    eq("status", "active"); eq("target_mode", "radius"); neq("sender_id", uid)
+                    // Only Flares from the last 2 hours: an old Flare nobody closed must never alert anyone.
+                    gte("created_at", java.time.Instant.now().minusSeconds(2 * 3600).toString())
+                }
+            }
             .decodeList<Flare>()
         if (activeFlares.isEmpty()) return emptyList()
 
@@ -297,6 +303,16 @@ object ClarionRepository {
                 "Couldn't save username"
             }
         }
+    }
+
+    suspend fun removeTrustedMember(memberId: String) {
+        val uid = currentUserId() ?: return
+        supabase.from("trusted_circle_members").delete { filter { eq("owner_id", uid); eq("member_id", memberId) } }
+    }
+
+    suspend fun removeExcluded(excludedId: String) {
+        val uid = currentUserId() ?: return
+        supabase.from("exclude_list").delete { filter { eq("owner_id", uid); eq("excluded_id", excludedId) } }
     }
 
     suspend fun addTrustedMember(memberId: String) {

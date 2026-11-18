@@ -5,8 +5,8 @@ import androidx.compose.ui.graphics.Color
 // Light palette
 val Indigo = Color(0xFF32328C)
 val IndigoSoft = Color(0xFFEDEBF9)
-val Flare = Color(0xFFE8562E)
-val FlareGlow = Color(0xFFF08B5A)
+val Flare = Color(0xFFFF7A45)
+val FlareGlow = Color(0xFFFF9A70)
 val Paper = Color(0xFFF9F7F2)
 val Ink = Color(0xFF2B2A28)
 val Safe = Color(0xFF3FAE83)
