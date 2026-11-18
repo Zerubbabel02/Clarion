@@ -23,6 +23,7 @@ data class Profile(
     @SerialName("radius_km") val radiusKm: Double = 1.2,
     @SerialName("night_mute_enabled") val nightMuteEnabled: Boolean = true,
     @SerialName("fcm_token") val fcmToken: String? = null,
+    @SerialName("show_on_map") val showOnMap: Boolean = true,
 )
 
 @Serializable
@@ -75,3 +76,7 @@ data class FlareResponse(
     @SerialName("responder_id") val responderId: String? = null,
     val status: String,
 )
+
+/** One anonymous, approximate neighbour position (from nearby_people()). */
+@Serializable
+data class NearbyDot(val lat: Double, val lng: Double)

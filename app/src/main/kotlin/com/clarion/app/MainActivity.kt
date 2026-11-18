@@ -63,6 +63,7 @@ class MainActivity : ComponentActivity() {
         requestNotificationPermissionIfNeeded()
 
         pendingNav.value = pendingNavFrom(intent)
+        com.clarion.app.core.ShareNotifier.takeFocus(intent)
         themeMode.value = ThemePrefs.get(this)
 
         setContent {
@@ -98,6 +99,7 @@ class MainActivity : ComponentActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         pendingNav.value = pendingNavFrom(intent)
+        com.clarion.app.core.ShareNotifier.takeFocus(intent)
     }
 
     private fun pendingNavFrom(intent: Intent): PendingNav? {

@@ -196,6 +196,29 @@ fun YouScreen(
                 LineDivider()
                 SRow("moon", "Night quiet", if (p?.nightMuteEnabled != false) "On" else "Off") { onSub("quiet") }
             }
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                SectionLabel("Privacy")
+                ListCard {
+                    Row(Modifier.fillMaxWidth().heightIn(min = 58.dp).padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        IconBox("people"); Spacer(Modifier.width(12.dp))
+                        Column(Modifier.weight(1f)) {
+                            T("Show me to neighbours", 15.sp, t.ink, FontWeight.Bold)
+                            T(if (p?.showOnMap != false) "On · you appear as an unnamed dot" else "Off · hidden from other people's maps", 12.5.sp, t.muted)
+                        }
+                        Toggle(p?.showOnMap != false) { on ->
+                            profile = p?.copy(showOnMap = on)
+                            scope.launch { try { ClarionRepository.updateShowOnMap(on) } catch (_: Exception) {} }
+                            toast = if (on) "You show as a dot to Clarion users near you" else "You're hidden from other people's maps"
+                        }
+                    }
+                }
+                T(
+                    "The dots on the Home map are other Clarion users near you, so you can see how many people a Flare would reach. " +
+                        "Your dot never shows your name, is placed about 200 m from where you really are, updates only every few minutes, " +
+                        "and only appears when at least 3 people are around. Turn this off and you disappear from everyone else's map. You'll still see theirs.",
+                    12.5.sp, t.muted, lineHeight = 18.sp,
+                )
+            }
             Group("Appearance") {
                 Row(Modifier.fillMaxWidth().heightIn(min = 58.dp), verticalAlignment = Alignment.CenterVertically) {
                     IconBox("sun"); Spacer(Modifier.width(12.dp))

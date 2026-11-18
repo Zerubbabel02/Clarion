@@ -38,6 +38,7 @@ import com.clarion.app.core.LatLng
 import com.clarion.app.core.LocationHelper
 import com.clarion.app.core.NotificationHelper
 import com.clarion.app.core.SharedLocation
+import com.clarion.app.core.ShareNotifier
 import com.clarion.app.core.ThemeMode
 import com.clarion.app.ui.screens.CIcon
 import com.clarion.app.ui.screens.FriendsMapScreen
@@ -72,6 +73,8 @@ fun ClarionMainShell(
     var myLoc by remember { mutableStateOf<LatLng?>(null) }
     var sharers by remember { mutableStateOf<List<SharedLocation>>(emptyList()) }
     var trustedMode by remember { mutableStateOf(false) }
+    var knownSharers by remember { mutableStateOf<Set<String>?>(null) }
+    var dots by remember { mutableStateOf<List<com.clarion.app.core.NearbyDot>>(emptyList()) }
     var holdSeconds by remember { mutableFloatStateOf(HoldPrefs.get(context)) }
     var tabBarH by remember { mutableStateOf(86.dp) }
     val dockBottom = tabBarH + 12.dp + 10.dp
@@ -109,15 +112,37 @@ fun ClarionMainShell(
                     }
                 }
             } catch (_: Exception) {}
-            try { sharers = ClarionRepository.sharedWithMe() } catch (_: Exception) {}
+            try {
+                val fresh = ClarionRepository.sharedWithMe()
+                // Someone new started sharing while the app is open: the same notification the push
+                // sends when it's closed (same id per person, so it never shows twice).
+                if (knownSharers != null) fresh.filter { it.id !in knownSharers!! }.forEach { ShareNotifier.postShareStarted(context, it.id, it.displayName) }
+                knownSharers = fresh.map { it.id }.toSet()
+                sharers = fresh
+            } catch (_: Exception) {}
             delay(20_000)
+        }
+    }
+
+    // Neighbour dots: approximate and anonymous; refreshed every 5 minutes, never live.
+    LaunchedEffect(Unit) {
+        while (true) {
+            try { dots = ClarionRepository.nearbyPeople() } catch (_: Exception) {}
+            delay(5 * 60_000L)
+        }
+    }
+
+    // A tapped "is sharing their location with you" notification: open the Map on that person.
+    LaunchedEffect(Unit) {
+        ShareNotifier.pendingFocus.collect { id ->
+            if (id != null) { focusId = id; showShare = false; selected = 1; ShareNotifier.pendingFocus.value = null }
         }
     }
 
     Box(Modifier.fillMaxSize().background(tk().bg)) {
         when (selected) {
             0 -> HomeScreen(
-                myLoc = myLoc, sharers = sharers, holdSeconds = holdSeconds, dockBottom = dockBottom, hideIsland = showShare,
+                myLoc = myLoc, sharers = sharers, dots = dots, holdSeconds = holdSeconds, dockBottom = dockBottom, hideIsland = showShare,
                 onHoldComplete = { sendFlare(it) }, onModeChange = { trustedMode = it },
                 onOpenYou = { youSub = null; selected = 2 },
                 onSeeFriend = { focusId = it; selected = 1 },

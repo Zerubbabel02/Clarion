@@ -29,6 +29,11 @@ class ClarionFirebaseMessagingService : FirebaseMessagingService() {
             }
             return
         }
+        if (data["type"] == "share_started") {
+            val ownerId = data["ownerId"] ?: return
+            ShareNotifier.postShareStarted(applicationContext, ownerId, data["ownerName"] ?: "A friend")
+            return
+        }
         if (data["type"] != "flare_alert") return
 
         val flareLat = data["flareLat"]?.toDoubleOrNull() ?: return

@@ -92,6 +92,18 @@ fun IncomingFlareScreen(
 
     LaunchedEffect(flareId) { if (flareId != null) try { ClarionRepository.respondToFlare(flareId, "seen") } catch (_: Exception) {} }
 
+    // The sender's phone sends first and then refines its position; follow the Flare to the exact spot.
+    var livePos by remember { mutableStateOf<Pair<Double, Double>?>(null) }
+    LaunchedEffect(flareId) {
+        if (flareId == null) return@LaunchedEffect
+        while (true) {
+            try { ClarionRepository.getFlare(flareId)?.let { livePos = it.lat to it.lng } } catch (_: Exception) {}
+            kotlinx.coroutines.delay(8_000)
+        }
+    }
+    @Suppress("NAME_SHADOWING") val flareLat = livePos?.first ?: flareLat
+    @Suppress("NAME_SHADOWING") val flareLng = livePos?.second ?: flareLng
+
     when (view) {
         "alert" -> Column(Modifier.fillMaxSize().background(t.bg)) {
             Box(Modifier.fillMaxWidth().height(372.dp)) {

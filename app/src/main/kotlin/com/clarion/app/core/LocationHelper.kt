@@ -61,4 +61,39 @@ object LocationHelper {
     @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
     suspend fun getFastestLocation(context: Context): LatLng? =
         getLastKnownLocation(context) ?: getCurrentLocation(context)
+
+    /** A position plus how precise it is (metres) and how old it is (ms). */
+    data class Fix(val lat: Double, val lng: Double, val accuracyM: Float, val ageMs: Long)
+
+    private fun android.location.Location.toFix() = Fix(
+        latitude, longitude, if (hasAccuracy()) accuracy else 999f,
+        (android.os.SystemClock.elapsedRealtimeNanos() - elapsedRealtimeNanos) / 1_000_000,
+    )
+
+    /** The phone's cached position — instant, but may be old or rough. */
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    suspend fun lastFix(context: Context): Fix? {
+        val client = LocationServices.getFusedLocationProviderClient(context)
+        return suspendCancellableCoroutine { cont ->
+            client.lastLocation
+                .addOnSuccessListener { cont.resume(it?.toFix()) }
+                .addOnFailureListener { cont.resume(null) }
+        }
+    }
+
+    /** A brand-new fix. [precise] uses GPS (slower, best accuracy); otherwise the fastest decent one. */
+    @RequiresPermission(Manifest.permission.ACCESS_FINE_LOCATION)
+    suspend fun freshFix(context: Context, precise: Boolean): Fix? {
+        val client = LocationServices.getFusedLocationProviderClient(context)
+        val request = CurrentLocationRequest.Builder()
+            .setPriority(if (precise) Priority.PRIORITY_HIGH_ACCURACY else Priority.PRIORITY_BALANCED_POWER_ACCURACY)
+            .setMaxUpdateAgeMillis(if (precise) 0 else 30_000)
+            .setDurationMillis(if (precise) 15_000 else 5_000)
+            .build()
+        return suspendCancellableCoroutine { cont ->
+            client.getCurrentLocation(request, null)
+                .addOnSuccessListener { cont.resume(it?.toFix()) }
+                .addOnFailureListener { cont.resume(null) }
+        }
+    }
 }

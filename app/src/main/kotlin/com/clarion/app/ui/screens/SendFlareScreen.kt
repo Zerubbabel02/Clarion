@@ -65,6 +65,8 @@ import com.clarion.app.core.Profile
 import com.clarion.app.ui.theme.Manrope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withTimeoutOrNull
+import kotlin.math.roundToInt
 
 private sealed class SendState {
     object Locating : SendState()
@@ -86,28 +88,53 @@ fun SendFlareScreen(onCancelFlare: () -> Unit, trustedOnly: Boolean = false) {
     var cancelling by remember { mutableStateOf(false) }
     var reach by remember { mutableStateOf("") }
     var replies by remember { mutableStateOf<List<Pair<FlareResponse, Profile?>>>(emptyList()) }
+    var fixAcc by remember { mutableStateOf<Float?>(null) }
+    var refining by remember { mutableStateOf(false) }
 
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) { state = SendState.Locating; attempt++ }
     }
 
+    // Who it reached — fetched alongside, never in the way of sending.
     LaunchedEffect(attempt) {
         reach = try {
             if (trustedOnly) "Sent to your trusted circle · ${ClarionRepository.listTrustedMembers().size} people"
             else "Sent to everyone within ${formatKm(ClarionRepository.getMyProfile()?.radiusKm ?: 1.2)}"
         } catch (_: Exception) { if (trustedOnly) "Sent to your trusted circle" else "Sent to everyone nearby" }
+    }
+
+    // Send first, then refine. A recent (≤ 2 min), decent (≤ 100 m) cached position goes out at
+    // once; otherwise wait at most 3 s for a quick fix, falling back to whatever the phone has.
+    // After sending, GPS keeps working in the background and moves the Flare to the exact spot.
+    LaunchedEffect(attempt) {
         val has = ContextCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) == android.content.pm.PackageManager.PERMISSION_GRANTED
         if (!has) { state = SendState.NoPermission; return@LaunchedEffect }
         try {
+            @Suppress("MissingPermission") val last = LocationHelper.lastFix(context)
+            val usable = last != null && last.ageMs <= 120_000 && last.accuracyM <= 100f
             @Suppress("MissingPermission")
-            val loc = LocationHelper.getFastestLocation(context)
-            if (loc == null) { state = SendState.Error("Couldn't get a location fix. Move somewhere with a clearer sky and try again."); return@LaunchedEffect }
-            // Real lodge name from onboarding: map accuracy is poor here, so the building matters as much as the pin.
-            val lodge = try { ClarionRepository.getMyLodgeName() } catch (_: Exception) { null }
-            val id = ClarionRepository.sendFlare(loc.lat, loc.lng, locationLabel = lodge, targetMode = if (trustedOnly) "trusted" else "radius")
+            val first = if (usable) last else (withTimeoutOrNull(3_000) { LocationHelper.freshFix(context, precise = false) } ?: last)
+            if (first == null) { state = SendState.Error("Couldn't find where you are. Turn on Location in your phone's settings and try again."); return@LaunchedEffect }
+            // The lodge name helps responders find the building — but never hold the Flare for it.
+            val lodge = withTimeoutOrNull(800) { try { ClarionRepository.getMyLodgeName() } catch (_: Exception) { null } }
+            val id = ClarionRepository.sendFlare(first.lat, first.lng, locationLabel = lodge, targetMode = if (trustedOnly) "trusted" else "radius")
+            fixAcc = first.accuracyM
             state = SendState.Out(id)
+
+            refining = true
+            var best: LocationHelper.Fix = first
+            for (i in 0 until 3) {
+                if (best.accuracyM <= 15f || state !is SendState.Out) break
+                @Suppress("MissingPermission") val f = LocationHelper.freshFix(context, precise = true) ?: continue
+                val movedM = distanceKm(best.lat, best.lng, f.lat, f.lng) * 1000
+                val better = f.accuracyM < best.accuracyM - 3f || (movedM > 15 && f.accuracyM <= best.accuracyM + 10f)
+                if (better && state is SendState.Out) {
+                    try { ClarionRepository.updateFlareLocation(id, f.lat, f.lng); best = f; fixAcc = f.accuracyM } catch (_: Exception) {}
+                }
+            }
+            refining = false
         } catch (e: Exception) {
-            state = SendState.Error(e.message ?: "Couldn't send your Flare. Try again.")
+            if (state !is SendState.Out) state = SendState.Error(e.message ?: "Couldn't send your Flare. Try again.") else refining = false
         }
     }
 
@@ -163,6 +190,18 @@ fun SendFlareScreen(onCancelFlare: () -> Unit, trustedOnly: Boolean = false) {
                     T("FLARE ACTIVE", 12.sp, t.flareText, mono = true, letter = 2.2.sp)
                     T("Your Flare is out", 28.sp, t.ink, FontWeight.ExtraBold)
                     T(reach, 14.5.sp, t.muted)
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        if (refining) {
+                            val a by rememberInfiniteTransition(label = "fix").animateFloat(1f, 0.25f, infiniteRepeatable(tween(600), RepeatMode.Reverse), label = "a")
+                            Box(Modifier.size(8.dp).alpha(a).background(t.flare, CircleShape))
+                        } else CIcon("check", 14.dp, t.safe, 2.6f)
+                        Spacer(Modifier.width(7.dp))
+                        T(
+                            if (refining) "Finding your exact spot" + (fixAcc?.let { " · ±${it.roundToInt()} m so far" } ?: "…")
+                            else "Exact location" + (fixAcc?.let { " · ±${it.roundToInt()} m" } ?: ""),
+                            13.sp, if (refining) t.muted else t.safe, FontWeight.SemiBold,
+                        )
+                    }
                     T("%02d:%02d".format(elapsed / 60, elapsed % 60), 54.sp, t.ink, FontWeight.Medium, mono = true)
                     Column(Modifier.fillMaxWidth().heightIn(min = 150.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                         replies.sortedByDescending { it.first.status == "on_way" }.forEach { (r, p) ->

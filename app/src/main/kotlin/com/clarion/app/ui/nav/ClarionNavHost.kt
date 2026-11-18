@@ -60,9 +60,32 @@ fun ClarionNavHost(
         }
     }
 
+    // Pairs with the fast open: if the saved session turns out to be signed out, leave Home for sign-in.
+    LaunchedEffect(Unit) {
+        supabase.auth.sessionStatus.collect { status ->
+            if (status is SessionStatus.NotAuthenticated && navController.currentDestination?.route == ClarionDestinations.MAIN) {
+                navController.navigate(ClarionDestinations.AUTH) { popUpTo(ClarionDestinations.MAIN) { inclusive = true } }
+            }
+        }
+    }
+
     NavHost(navController = navController, startDestination = ClarionDestinations.SPLASH) {
         composable(ClarionDestinations.SPLASH) {
+            val context = LocalContext.current
             LaunchedEffect(Unit) {
+                // Fast open, for emergencies: a session saved on this phone plus a profile seen
+                // before (cached name) means go straight to Home — no waiting on the network.
+                // The token refresh and profile check carry on in the background; if the account
+                // turns out to be signed out, the watcher below sends the user to sign-in.
+                try {
+                    supabase.auth.awaitInitialization()
+                    if (supabase.auth.currentSessionOrNull() != null && com.clarion.app.core.ProfileCache.getDisplayName(context) != null) {
+                        navController.navigate(ClarionDestinations.MAIN) { popUpTo(ClarionDestinations.SPLASH) { inclusive = true } }
+                        return@LaunchedEffect
+                    }
+                } catch (_: Exception) {
+                    // Fall through to the careful path below.
+                }
                 // The real logout bug, round 2: awaitInitialization() only guarantees the
                 // disk-restore step finished — it does NOT wait for the follow-up network
                 // refresh Auth performs when the restored access token has already expired,

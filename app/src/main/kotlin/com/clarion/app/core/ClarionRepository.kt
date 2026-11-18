@@ -12,6 +12,8 @@ import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.Serializable
+import kotlinx.serialization.json.buildJsonObject
+import kotlinx.serialization.json.put
 import kotlin.coroutines.resume
 
 object ClarionRepository {
@@ -109,7 +111,26 @@ object ClarionRepository {
     suspend fun updateLocation(lat: Double, lng: Double) {
         val uid = currentUserId() ?: return
         supabase.from("profiles")
-            .update(mapOf("lat" to lat, "lng" to lng)) { filter { eq("id", uid) } }
+            .update(buildJsonObject {
+                put("lat", lat); put("lng", lng); put("location_updated_at", java.time.Instant.now().toString())
+            }) { filter { eq("id", uid) } }
+    }
+
+    suspend fun updateShowOnMap(show: Boolean) {
+        val uid = currentUserId() ?: return
+        supabase.from("profiles").update(buildJsonObject { put("show_on_map", show) }) { filter { eq("id", uid) } }
+    }
+
+    /** Approximate, anonymous dots for Clarion users near me (privacy rules live in nearby_people()). */
+    suspend fun nearbyPeople(): List<NearbyDot> = supabase.postgrest.rpc("nearby_people").decodeList<NearbyDot>()
+
+    /** The latest position of a Flare (the sender's phone refines it after sending). */
+    suspend fun getFlare(flareId: String): Flare? =
+        supabase.from("flares").select { filter { eq("id", flareId) } }.decodeSingleOrNull<Flare>()
+
+    /** Move my Flare to a more precise fix found after it was sent. */
+    suspend fun updateFlareLocation(flareId: String, lat: Double, lng: Double) {
+        supabase.from("flares").update(buildJsonObject { put("lat", lat); put("lng", lng) }) { filter { eq("id", flareId) } }
     }
 
     suspend fun updateRadiusKm(km: Double) {

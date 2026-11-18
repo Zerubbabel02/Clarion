@@ -92,7 +92,7 @@ fun OnboardingScreen(onDone: () -> Unit, onSignOut: () -> Unit = {}) {
                 T("Nothing works without these. Here is exactly why.", 14.5.sp, t.muted, lineHeight = 21.sp)
                 Spacer(Modifier.height(24.dp))
                 Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
-                    PermCard("pin", "Location", "So a Flare carries your exact spot, and others can be routed straight to you.", locOk) {
+                    PermCard("pin", "Location", "So a Flare carries your exact spot, and others can be routed straight to you. Nearby Clarion users see an unnamed dot about 200 m from you; you can turn that off in Profile.", locOk) {
                         locationPermission.launch(Manifest.permission.ACCESS_FINE_LOCATION)
                     }
                     PermCard("bell", "Notifications", "So a Flare can ring your phone even when Clarion isn’t open.", notifOk) {

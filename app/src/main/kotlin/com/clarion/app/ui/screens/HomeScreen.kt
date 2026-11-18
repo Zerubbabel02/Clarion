@@ -2,6 +2,7 @@ package com.clarion.app.ui.screens
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -65,6 +66,7 @@ private fun timeOfDayGreeting(): String = when (java.time.LocalTime.now().hour) 
 fun HomeScreen(
     myLoc: com.clarion.app.core.LatLng?,
     sharers: List<SharedLocation>,
+    dots: List<com.clarion.app.core.NearbyDot>,
     holdSeconds: Float,
     dockBottom: Dp,
     hideIsland: Boolean,
@@ -159,6 +161,18 @@ fun HomeScreen(
                     Box(Modifier.offset { IntOffset((me.x - half).roundToInt(), (me.y - r - lh).roundToInt()) }.width(80.dp), contentAlignment = Alignment.Center) {
                         T(formatKm(radiusKm.toDouble()), 11.sp, t.onFlare, FontWeight.Bold, modifier = Modifier.background(t.flare, RoundedCornerShape(50)).padding(horizontal = 8.dp, vertical = 3.dp))
                     }
+                }
+            }
+            // Neighbour dots (approximate, anonymous): orange when inside your Flare distance.
+            val dotHalf = with(density) { 3.5.dp.toPx() }
+            dots.forEach { d ->
+                handle.screen(d.lat, d.lng)?.let { p ->
+                    val inside = !trusted && myLoc != null && distanceKm(myLoc.lat, myLoc.lng, d.lat, d.lng) <= radiusKm
+                    Box(
+                        Modifier.offset { IntOffset((p.x - dotHalf).roundToInt(), (p.y - dotHalf).roundToInt()) }.size(7.dp)
+                            .then(if (inside) Modifier.border(3.dp, t.flare.copy(alpha = 0.26f), CircleShape) else Modifier)
+                            .background(if (inside) t.flare else t.muted.copy(alpha = 0.38f), CircleShape),
+                    )
                 }
             }
             sharers.forEach { s -> if (s.lat != null && s.lng != null) handle.screen(s.lat, s.lng)?.let { p -> MapPin(p, s.displayName, s.avatarUrl, false) { onSeeFriend(s.id) } } }
