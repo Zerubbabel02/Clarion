@@ -55,3 +55,15 @@ data class LocationShare(
     @SerialName("shared_with_id") val sharedWithId: String,
     @SerialName("expires_at") val expiresAt: String? = null,
 )
+
+/** A friend who is sharing their live location with the signed-in user (from shared_with_me()). */
+@Serializable
+data class SharedLocation(
+    val id: String,
+    @SerialName("display_name") val displayName: String,
+    val username: String? = null,
+    @SerialName("avatar_url") val avatarUrl: String? = null,
+    val lat: Double? = null,
+    val lng: Double? = null,
+    @SerialName("expires_at") val expiresAt: String? = null,
+)

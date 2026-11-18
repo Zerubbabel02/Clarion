@@ -7,6 +7,8 @@ import io.github.jan.supabase.auth.providers.builtin.Email
 import io.github.jan.supabase.auth.providers.builtin.IDToken
 import io.github.jan.supabase.exceptions.RestException
 import io.github.jan.supabase.postgrest.from
+import io.github.jan.supabase.postgrest.postgrest
+import io.github.jan.supabase.postgrest.rpc
 import io.github.jan.supabase.postgrest.query.Columns
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlinx.serialization.Serializable
@@ -262,6 +264,23 @@ object ClarionRepository {
         val uid = currentUserId() ?: return
         supabase.from("profiles").update(mapOf("display_name" to name)) { filter { eq("id", uid) } }
     }
+
+    /** Returns null on success, or a message to show the user. Empty clears the number. */
+    suspend fun updatePhone(phone: String): String? {
+        val uid = currentUserId() ?: return "Not signed in"
+        val trimmed = phone.trim()
+        if (trimmed.isNotEmpty() && trimmed.count { it.isDigit() } < 10) return "Type a full phone number, like 0803 123 4567"
+        return try {
+            supabase.from("profiles").update(mapOf("phone_number" to trimmed.ifEmpty { null })) { filter { eq("id", uid) } }
+            null
+        } catch (e: RestException) {
+            if ((e.message ?: "").contains("duplicate key", ignoreCase = true)) "That number is already on another account" else "Couldn't save phone number"
+        }
+    }
+
+    /** Friends sharing their live location with me, with that location (shared_with_me() in the database). */
+    suspend fun sharedWithMe(): List<SharedLocation> =
+        supabase.postgrest.rpc("shared_with_me").decodeList<SharedLocation>()
 
     /** Returns null on success, or a message to show the user (e.g. the username is taken). */
     suspend fun updateUsername(username: String): String? {

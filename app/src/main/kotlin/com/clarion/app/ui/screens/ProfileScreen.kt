@@ -54,6 +54,7 @@ import com.clarion.app.core.Profile
 import com.clarion.app.core.ProfileCache
 import com.clarion.app.core.ThemeMode
 import com.clarion.app.core.ThemePrefs
+import com.clarion.app.core.HoldPrefs
 import com.clarion.app.core.supabase
 import com.clarion.app.ui.theme.Dusk
 import io.github.jan.supabase.storage.storage
@@ -67,6 +68,9 @@ fun ProfileScreen(
     onThemeModeChange: (ThemeMode) -> Unit,
     onOpenNightMode: () -> Unit,
     onSignedOut: () -> Unit,
+    onOpenCircles: () -> Unit = {},
+    holdSeconds: Float = 1.5f,
+    onHoldSecondsChange: (Float) -> Unit = {},
 ) {
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
@@ -89,6 +93,17 @@ fun ProfileScreen(
         alertSoundUri = picked?.toString()
         // The channel's sound is frozen once created — this rebuild is the only way the
         // pick actually takes effect, rather than silently sticking with the old one.
+        NotificationHelper.ensureChannel(context)
+    }
+
+    // Any sound file on the phone as the Flare ringtone. The permission is kept across restarts,
+    // and System UI is granted read access so the notification channel can actually play it.
+    val customPicker = rememberLauncherForActivityResult(ActivityResultContracts.OpenDocument()) { uri: Uri? ->
+        if (uri == null) return@rememberLauncherForActivityResult
+        try { context.contentResolver.takePersistableUriPermission(uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Exception) {}
+        try { context.grantUriPermission("com.android.systemui", uri, Intent.FLAG_GRANT_READ_URI_PERMISSION) } catch (_: Exception) {}
+        AlertSoundPrefs.set(context, uri.toString())
+        alertSoundUri = uri.toString()
         NotificationHelper.ensureChannel(context)
     }
 
@@ -155,7 +170,7 @@ fun ProfileScreen(
                 .padding(horizontal = 22.dp),
         ) {
             Spacer(modifier = Modifier.height(58.dp))
-            Text("Profile", fontSize = 22.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
+            Text("You", fontSize = 26.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.onBackground)
             Spacer(modifier = Modifier.height(24.dp))
 
             Column(horizontalAlignment = Alignment.CenterHorizontally, modifier = Modifier.fillMaxWidth()) {
@@ -270,7 +285,7 @@ fun ProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-            Text("USERNAME", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Text("ACCOUNT", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(10.dp))
             Column(
                 modifier = Modifier
@@ -287,29 +302,51 @@ fun ProfileScreen(
                     normalize = { it.filter { c -> c.isLetterOrDigit() || c == '_' }.lowercase() },
                     onSave = { value -> ClarionRepository.updateUsername(value).also { if (it == null) profile = ClarionRepository.getMyProfile() } },
                 )
+                Spacer(modifier = Modifier.height(14.dp))
+                EditableIdentityRow(
+                    label = "Phone number",
+                    displayValue = profile?.phoneNumber.orEmpty(),
+                    isPrimary = false,
+                    helperText = "Friends can also find you by your phone number.",
+                    normalize = { it.filter { c -> c.isDigit() || c == '+' || c == ' ' } },
+                    onSave = { value -> ClarionRepository.updatePhone(value).also { if (it == null) profile = ClarionRepository.getMyProfile() } },
+                )
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-            Text("SAFETY", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Text("FLARE", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(Dusk.copy(alpha = 0.16f), RoundedCornerShape(18.dp))
-                    .clickable { onOpenNightMode() }
-                    .padding(16.dp),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Night circle muting", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Dusk)
+            SettingsCard {
+                SettingsRow("Who gets my Flare", "By distance or your trusted circle") { onOpenCircles() }
+                RowDivider()
+                Column(modifier = Modifier.padding(vertical = 14.dp)) {
+                    Text("Hold to send", fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
                     Text(
-                        "Same-building alerts stay quiet after 9pm",
-                        fontSize = 12.sp,
-                        color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                        "How long you hold the Flare button before it sends. Longer is harder to send by mistake.",
+                        fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f),
                     )
+                    Spacer(modifier = Modifier.height(10.dp))
+                    Row(
+                        modifier = Modifier.fillMaxWidth().background(MaterialTheme.colorScheme.primaryContainer, RoundedCornerShape(12.dp)).padding(4.dp),
+                    ) {
+                        HoldPrefs.CHOICES.forEach { v ->
+                            Box(
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .background(if (v == holdSeconds) MaterialTheme.colorScheme.surface else Color.Transparent, RoundedCornerShape(9.dp))
+                                    .clickable { onHoldSecondsChange(v) }
+                                    .padding(vertical = 10.dp),
+                                contentAlignment = Alignment.Center,
+                            ) {
+                                Text(
+                                    (if (v == v.toInt().toFloat()) v.toInt().toString() else v.toString()) + " s",
+                                    fontSize = 13.sp, fontWeight = FontWeight.Bold,
+                                    color = if (v == holdSeconds) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onBackground.copy(alpha = 0.6f),
+                                )
+                            }
+                        }
+                    }
                 }
-                Text("→", fontSize = 18.sp, fontWeight = FontWeight.Bold, color = Dusk)
             }
 
             Spacer(modifier = Modifier.height(30.dp))
@@ -327,32 +364,30 @@ fun ProfileScreen(
             }
 
             Spacer(modifier = Modifier.height(30.dp))
-            Text("ALERT SOUND", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
+            Text("ALERTS", fontSize = 12.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f))
             Spacer(modifier = Modifier.height(10.dp))
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
-                    .clickable {
-                        val currentUri = alertSoundUri?.let { Uri.parse(it) }
-                            ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_RINGTONE)
-                        val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
-                            putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_RINGTONE)
-                            putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Flare alert sound")
-                            putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
-                            putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentUri)
-                        }
-                        soundPicker.launch(intent)
+            SettingsCard {
+                SettingsRow("Flare ringtone", currentSoundName()) {
+                    val currentUri = alertSoundUri?.let { Uri.parse(it) }
+                        ?: RingtoneManager.getActualDefaultRingtoneUri(context, RingtoneManager.TYPE_RINGTONE)
+                    val intent = Intent(RingtoneManager.ACTION_RINGTONE_PICKER).apply {
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TYPE, RingtoneManager.TYPE_RINGTONE)
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_TITLE, "Flare alert sound")
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_SHOW_SILENT, false)
+                        putExtra(RingtoneManager.EXTRA_RINGTONE_EXISTING_URI, currentUri)
                     }
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Column(modifier = Modifier.weight(1f)) {
-                    Text("Flare ringtone", fontSize = 14.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
-                    Text(currentSoundName(), fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f))
+                    soundPicker.launch(intent)
                 }
-                Text("Change", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = MaterialTheme.colorScheme.primary)
+                RowDivider()
+                SettingsRow("Add a custom ringtone", "Pick any sound file on your phone") { customPicker.launch(arrayOf("audio/*")) }
+                RowDivider()
+                SettingsRow("Night quiet", "Same-building alerts stay quiet at night") { onOpenNightMode() }
             }
+            Text(
+                "Clarion SOS tones are coming soon.",
+                fontSize = 12.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.5f),
+                modifier = Modifier.padding(top = 8.dp, start = 4.dp),
+            )
 
             Spacer(modifier = Modifier.height(30.dp))
             Row(
@@ -371,7 +406,7 @@ fun ProfileScreen(
             ) {
                 Text("Sign Out", color = Color(0xFFE8562E), fontWeight = FontWeight.Bold, fontSize = 14.sp)
             }
-            Spacer(modifier = Modifier.height(60.dp))
+            Spacer(modifier = Modifier.height(130.dp))
         }
     }
 }
@@ -529,4 +564,33 @@ private fun EditableIdentityRow(
             }
         }
     }
+}
+
+@Composable
+private fun SettingsCard(content: @Composable () -> Unit) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .background(MaterialTheme.colorScheme.surface, RoundedCornerShape(18.dp))
+            .padding(horizontal = 16.dp),
+    ) { content() }
+}
+
+@Composable
+private fun SettingsRow(title: String, value: String, onClick: () -> Unit) {
+    Row(
+        modifier = Modifier.fillMaxWidth().clickable { onClick() }.padding(vertical = 14.dp),
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(title, fontSize = 15.sp, fontWeight = FontWeight.SemiBold, color = MaterialTheme.colorScheme.onBackground)
+            Text(value, fontSize = 12.5.sp, maxLines = 1, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.55f))
+        }
+        Text("›", fontSize = 22.sp, color = MaterialTheme.colorScheme.onBackground.copy(alpha = 0.45f))
+    }
+}
+
+@Composable
+private fun RowDivider() {
+    Box(modifier = Modifier.fillMaxWidth().height(1.dp).background(MaterialTheme.colorScheme.onBackground.copy(alpha = 0.08f)))
 }
