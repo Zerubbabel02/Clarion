@@ -147,6 +147,7 @@ private val ICON_PATHS: Map<String, List<String>> = mapOf(
     "timer" to listOf(circle(12f, 13.5f, 7.5f), "M12 9.5v4l2.6 2M9.5 2.5h5"),
     "play" to listOf("M8 5.5v13l10.5-6.5z"),
     "stop" to listOf("M8.5 6.5h7a2 2 0 0 1 2 2v7a2 2 0 0 1-2 2h-7a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2z"),
+    "shield" to listOf("M12 3 5 6v5.5c0 4.4 3 7.6 7 9 4-1.4 7-4.6 7-9V6z"),
     "search" to listOf(circle(11f, 11f, 6.5f), "m16 16 4.5 4.5"),
     "bell" to listOf("M6 16.5V11a6 6 0 0 1 12 0v5.5l1.5 2h-15z", "M10 20.5a2 2 0 0 0 4 0"),
 )

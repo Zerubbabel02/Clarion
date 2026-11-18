@@ -305,6 +305,21 @@ object ClarionRepository {
         }
     }
 
+    /** Reply to someone's Flare: "seen" when the alert opens, "on_way" when they tap "I'm on my way". */
+    suspend fun respondToFlare(flareId: String, status: String) {
+        val uid = currentUserId() ?: return
+        supabase.from("flare_responses").upsert(FlareResponse(flareId, uid, status)) { onConflict = "flare_id,responder_id" }
+    }
+
+    /** Replies to one of my Flares, with who sent each reply. */
+    suspend fun flareResponses(flareId: String): List<Pair<FlareResponse, Profile?>> {
+        val rows = supabase.from("flare_responses").select { filter { eq("flare_id", flareId) } }.decodeList<FlareResponse>()
+        if (rows.isEmpty()) return emptyList()
+        val ids = rows.mapNotNull { it.responderId }
+        val people = supabase.from("profile_directory").select { filter { isIn("id", ids) } }.decodeList<Profile>().associateBy { it.id }
+        return rows.map { it to people[it.responderId] }
+    }
+
     suspend fun removeTrustedMember(memberId: String) {
         val uid = currentUserId() ?: return
         supabase.from("trusted_circle_members").delete { filter { eq("owner_id", uid); eq("member_id", memberId) } }

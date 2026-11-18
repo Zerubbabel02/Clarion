@@ -182,7 +182,7 @@ fun BottomModal(onDismiss: () -> Unit, content: @Composable ColumnScope.() -> Un
 
 /** The mockup's text field: 54 dp tall, rounded, with an optional leading icon or "@". */
 @Composable
-fun ClarionField(value: String, onValue: (String) -> Unit, placeholder: String, lead: String? = null, at: Boolean = false) {
+fun ClarionField(value: String, onValue: (String) -> Unit, placeholder: String, lead: String? = null, at: Boolean = false, password: Boolean = false, keyboard: androidx.compose.ui.text.input.KeyboardType = androidx.compose.ui.text.input.KeyboardType.Text) {
     val t = tk()
     Row(
         Modifier.fillMaxWidth().heightIn(min = 54.dp).background(t.surface, RoundedCornerShape(16.dp)).border(1.5.dp, t.line, RoundedCornerShape(16.dp)).padding(horizontal = 16.dp),
@@ -194,6 +194,8 @@ fun ClarionField(value: String, onValue: (String) -> Unit, placeholder: String, 
             if (value.isEmpty()) T(placeholder, 16.sp, t.muted.copy(alpha = 0.75f))
             BasicTextField(
                 value = value, onValueChange = onValue, singleLine = true, cursorBrush = SolidColor(t.primary),
+                visualTransformation = if (password) androidx.compose.ui.text.input.PasswordVisualTransformation() else androidx.compose.ui.text.input.VisualTransformation.None,
+                keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = if (password) androidx.compose.ui.text.input.KeyboardType.Password else keyboard),
                 textStyle = TextStyle(fontFamily = Manrope, fontSize = 16.sp, fontWeight = FontWeight.Medium, color = t.ink),
                 modifier = Modifier.fillMaxWidth(),
             )

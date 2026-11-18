@@ -84,38 +84,30 @@ class FlareAlertActivity : ComponentActivity() {
         val lng = intent.getDoubleExtra(EXTRA_LNG, Double.NaN)
         val avatarUrl = intent.getStringExtra(EXTRA_AVATAR_URL)
 
+        fun stopRing() {
+            NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
+            NotificationHelper.cancelAutoDismiss(this)
+            NotificationHelper.clearRingState(this)
+        }
+
         setContent {
-            ClarionTheme {
+            ClarionTheme(darkTheme = true) {
                 IncomingFlareScreen(
+                    flareId = flareId,
                     senderName = sender,
                     distance = distance,
                     location = location,
                     avatarUrl = avatarUrl,
-                    onOpenMap = {
-                        // Stop the insistent ring now that the user has actually responded —
-                        // it should keep going while they're asleep/haven't noticed, not the
-                        // instant the screen draws.
-                        NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
-                        NotificationHelper.cancelAutoDismiss(this)
-                        NotificationHelper.clearRingState(this)
-                        val openMapIntent = Intent(this, MainActivity::class.java).apply {
-                            flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
-                            putExtra(MainActivity.EXTRA_NAVIGATE_TO, ClarionDestinations.FLARE_MAP)
-                            if (!lat.isNaN() && !lng.isNaN()) {
-                                putExtra(MainActivity.EXTRA_FLARE_LAT, lat)
-                                putExtra(MainActivity.EXTRA_FLARE_LNG, lng)
-                            }
-                            putExtra(MainActivity.EXTRA_FLARE_SENDER, sender)
-                        }
-                        startActivity(openMapIntent)
+                    flareLat = if (lat.isNaN()) null else lat,
+                    flareLng = if (lng.isNaN()) null else lng,
+                    // Stop the insistent ring only once the user actually responds.
+                    onStopRing = { stopRing() },
+                    onOpenClarion = {
+                        stopRing()
+                        startActivity(Intent(this, MainActivity::class.java).apply { flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP })
                         finish()
                     },
-                    onDismiss = {
-                        NotificationManagerCompat.from(this).cancel(NotificationHelper.NOTIFICATION_ID)
-                        NotificationHelper.cancelAutoDismiss(this)
-                        NotificationHelper.clearRingState(this)
-                        finish()
-                    },
+                    onClose = { stopRing(); finish() },
                 )
             }
         }

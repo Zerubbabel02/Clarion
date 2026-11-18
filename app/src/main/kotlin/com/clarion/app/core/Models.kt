@@ -67,3 +67,11 @@ data class SharedLocation(
     val lng: Double? = null,
     @SerialName("expires_at") val expiresAt: String? = null,
 )
+
+/** A reply to a Flare: "seen" or "on_way". */
+@Serializable
+data class FlareResponse(
+    @SerialName("flare_id") val flareId: String,
+    @SerialName("responder_id") val responderId: String? = null,
+    val status: String,
+)
